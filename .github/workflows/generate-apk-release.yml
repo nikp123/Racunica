@@ -4,9 +4,6 @@ env:
   # The name of the main module repository
   main_project_module: com.github.nikp123.racunica
 
-  # The name of the Play Store
-  playstore_name: Računica
-
 on:
   push:
     branches:
@@ -57,6 +54,16 @@ jobs:
       - name: Upload APK Release - ${{ env.repository_name }}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.date_today }} - ${{ env.playstore_name }} - ${{ env.repository_name }} - APK(s) release generated
+          name: ${{ env.date_today }} - ${{ env.repository_name }} - APK(s) release generated
           path: app/build/outputs/apk/release/
 
+      # Upload the pre-release build
+      - name: Create release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GH_ACCESS_TOKEN }}"
+          automatic_release_tag: ${{ env.VERSION }}
+          prerelease: true
+          title: "Development Build"
+          files: |
+            app/build/outputs/apk/release/app-release.apk
