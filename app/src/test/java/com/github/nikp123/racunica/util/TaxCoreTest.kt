@@ -25,9 +25,10 @@ class TaxCoreTest {
         assert(receipt.timestamp               == 1700570370516)
         assert(receipt.invoiceType             == SimpleReceipt.InvoiceType.NORMAL)
         assert(receipt.transactionType         == SimpleReceipt.TransactionType.SALE)
-        assert(receipt.buyerID.isEmpty())
+        assert(receipt.buyerID == null)
 
-        val receipt_text = receipt.fullScrape()
+        // TODO store test
+        val receipt_text = receipt.fullScrape()!!.component1()
         val correct_receipt = "<pre style=\"font-family:monospace; width: fit-content; margin: 0 auto; text-align: center;\">\n" +
                 "============ ФИСКАЛНИ РАЧУН ============\n" +
                 "               100049486                \n" +
@@ -62,7 +63,7 @@ class TaxCoreTest {
                 "                      \n" +
                 "======== КРАЈ ФИСКАЛНОГ РАЧУНА =========\n" +
                 "</pre>"
-        //assert(receipt_text == correct_receipt)
+        assert(receipt_text == correct_receipt)
     }
 
     @Test fun testFullDecodeBiH() {
@@ -79,9 +80,10 @@ class TaxCoreTest {
         assert(receipt.timestamp               == 1750669501024)
         assert(receipt.invoiceType             == SimpleReceipt.InvoiceType.NORMAL)
         assert(receipt.transactionType         == SimpleReceipt.TransactionType.SALE)
-        assert(receipt.buyerID.isEmpty())
+        assert(receipt.buyerID == null)
 
-        val receipt_text = receipt.fullScrape()
+        // TODO store test
+        val receipt_text = receipt.fullScrape()!!.component1()
         val correct_receipt = "<pre style=\"font-family:monospace; width: fit-content; margin: 0 auto; text-align: center;\">\n" +
                 "============ ФИСКАЛНИ РАЧУН ============\n" +
                 "             4403237830000              \n" +
@@ -124,6 +126,6 @@ class TaxCoreTest {
                 "                      \n" +
                 "======== КРАЈ ФИСКАЛНОГ РАЧУНА =========\n" +
                 "</pre>"
-        //assert(receipt_text == correct_receipt)
+        assert(receipt_text == correct_receipt)
     }
 }
