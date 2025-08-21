@@ -1,0 +1,65 @@
+<resources>
+    <string name="app_name">Računica</string>
+    <string name="title_activity_main">Računica</string>
+
+    <string name="receipts">Receipts</string>
+    <string name="scanner">Scan</string>
+    <string name="statistics">Statistics</string>
+
+    <string name="scanner_taxcore_receipt_added">Added \'%1$s-%2$s-%3$d\'</string>
+
+    <string name="receipt_overview">%1$s</string>
+
+    <string name="receipt_details_note">Leave a note for this receipt</string>
+
+    <string name="receipt_transaction_details">Transaction details</string>
+    <string name="receipt_details_amount">Amount</string>
+    <string name="receipt_details_time">Date of receipt</string>
+    <string name="receipt_details_type">Transaction type</string>
+    <string name="receipt_details_type_refund">Refund</string>
+    <string name="receipt_details_type_sale">Sale</string>
+    <string name="receipt_details_details">Details</string>
+    <string name="receipt_details_details_low">Low</string>
+    <string name="receipt_details_details_high">High</string>
+    <string name="receipt_details_details_explain">
+        When you scan the receipt code, the receipt itself might store some information about the
+        transaction in its QR code. This information is not complete and an online sync will be
+        required in order to get all of the information.
+        The problem with this is that it
+    </string>
+    <string name="receipt_id">Receipt number</string>
+    <string name="receipt_purchaser_id">Purchaser identity</string>
+    <string name="receipt_country">Country</string>
+
+
+    <string name="receipt_store_title">Store details</string>
+    <string name="receipt_store_name">Name</string>
+    <string name="receipt_store_id">Identifier</string>
+    <string name="receipt_store_municipality">Municipality</string>
+    <string name="receipt_store_address">Address</string>
+    <string name="receipt_store_city">City</string>
+
+    <string name="receipt_unknown">Unknown</string>
+
+    <string name="receipt_options_title">Options</string>
+    <string name="receipt_options_try_fetching">Try obtaining full receipt</string>
+    <string name="receipt_options_open_link">Open receipt link</string>
+    <string name="receipt_options_full_receipt">Open full receipt</string>
+
+    <string name="receipt_options_open_location">Set navigation to business</string>
+
+    <string name="receipt_options_store_rename">Change the name of this business</string>
+    <string name="store_rename">Type in the new business name</string>
+
+    <string name="scanner_taxcore_receipt_exists">This receipt already exists!</string>
+    <string name="receipt_options_try_fetching_success">Successfully got full receipt!</string>
+    <string name="receipt_options_try_fetching_failed">Failed to obtain the full receipt!</string>
+
+    <string name="country_name_serbia">Serbia</string>
+    <string name="country_name_bosnia">Bosnia and Herzegovina</string>
+    <string name="receipt_code_short">"Code: "</string>
+    <string name="receipt_store_registered_name">Registered name</string>
+    <string name="receipt_details_store_note">Leave a note for this business</string>
+    <string name="receipt_store_enter_custom_name">Add a custom name to this business</string>
+    <string name="receipt_options_delete">Delete this receipt</string>
+</resources>

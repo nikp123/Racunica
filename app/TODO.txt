@@ -1,0 +1,5 @@
+- Implement add by URL (Share dialog??)
+- Implement QR scan FROM the system ^ the same tbh
+- Statistics
+- Display activity
+- Warranties
