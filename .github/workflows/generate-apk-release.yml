@@ -62,7 +62,7 @@ jobs:
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GH_ACCESS_TOKEN }}"
-          automatic_release_tag: ${{ env.VERSION }}
+          automatic_release_tag: "development"
           prerelease: true
           title: "Development Build"
           files: |
