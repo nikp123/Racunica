@@ -30,4 +30,4 @@ Lijenčuga sam pa mi se nije dalo, slobodno promeni taj strings.xml I uradi to s
 
 GPLv3 or later
 
-This may change, but I don't want people commercializing this crap without giving back.
+This may change, but I am very against people commercializing this crap without giving back.
