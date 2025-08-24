@@ -2,6 +2,8 @@ package com.github.nikp123.racunica
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Base64
+import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -33,7 +35,14 @@ class ReceiptFullActivity : AppCompatActivity() {
 
         // Receipt details
         val webView = view.findViewById<WebView>(R.id.receipt_full_content)
-        webView.loadData(receipt.text ?: "Text content is missing, this is a bug!", "text/html", "UTF-8")
+        val siteUnencoded = receipt.text ?: "Text content is missing, this is a bug!"
+
+        // We need to do this conversion bullshit because
+        // for some reason if you parse a raw UTF-8 '#' (Pound sign)
+        // the WebView will treat it as some sort of stop character
+        // and prevent further content from being loaded in
+        val siteEncoded = Base64.encode(siteUnencoded.toByteArray(), Base64.NO_PADDING)
+        webView.loadData(String(siteEncoded), "text/html", "base64")
     }
 
     @SuppressLint("DefaultLocale")
