@@ -20,6 +20,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Validate that none of the gradle jar files haven't been 
+      # tampered with. Rude hackers >:(
+      - uses: gradle/actions/wrapper-validation@v4
+
       # Set Current Date As Env Variable
       - name: Set current date as env variable
         run: echo "date_today=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
