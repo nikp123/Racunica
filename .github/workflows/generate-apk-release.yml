@@ -57,12 +57,19 @@ jobs:
           name: ${{ env.date_today }} - ${{ env.repository_name }} - APK(s) release generated
           path: app/build/outputs/apk/release/
 
+      # Get app version
+      - name: Get version from build.gradle.kts
+        id: get_version
+        run: |
+          VERSION_NAME=$(grep 'versionName' app/build.gradle.kts | awk '{print $3}' | tr -d '\"')
+          echo "VERSION_NAME=${VERSION_NAME}" >> $GITHUB_ENV
+
       # Upload the pre-release build
       - name: Create release
         uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GH_ACCESS_TOKEN }}"
-          automatic_release_tag: "development"
+          automatic_release_tag: ${{ env.VERSION_NAME }}
           prerelease: true
           title: "Development Build"
           files: |
