@@ -60,9 +60,19 @@ jobs:
       - name: Build gradle project
         run: ./gradlew build
 
+      - name: Decode and save keystore
+        run: |
+          mkdir -p private/keys
+          echo "${{ secrets.APP_KEYSTORE }}" | base64 --decode > private/keys/github-release.jks
+
       # Create APK Release
-      - name: Build apk release project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assemble
+      - name: Build apk release project (APK)
+        run: ./gradlew assembleRelease
+        env:
+          KEYSTORE_PATH: private/keys/github-release.jks
+          STORE_PASSWORD: ${{ secrets.APP_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.APP_KEYSTORE_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.APP_KEYSTORE_KEY_PASSWORD }}
 
       # Noted For Output [main_project_module]/build/outputs/apk/release/
       - name: Upload APK Release - ${{ env.repository_name }}

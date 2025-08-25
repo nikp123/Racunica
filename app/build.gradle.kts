@@ -44,6 +44,14 @@ android {
             excludes += "mozilla/public-suffix-list.txt"
         }
     }
+    signingConfigs {
+      create("release") {
+        storeFile = file("../private/keys/github-release.jks")
+        storePassword = System.getenv("STORE_PASSWORD") ?: "missing-store-password"
+        keyAlias = System.getenv("KEY_ALIAS") ?: "missing-key-alias"
+        keyPassword = System.getenv("KEY_PASSWORD") ?: "missing-key-password"
+      }
+    }
 }
 
 dependencies {
