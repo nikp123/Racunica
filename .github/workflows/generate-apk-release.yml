@@ -61,10 +61,6 @@ jobs:
           mkdir -p private/keys
           echo "${{ secrets.APP_KEYSTORE }}" | base64 --decode > private/keys/github-release.jks
 
-      # Run Build Project
-      - name: Build gradle project
-        run: ./gradlew build
-
       # Create APK Release
       - name: Build apk release project (APK)
         run: ./gradlew assembleRelease
