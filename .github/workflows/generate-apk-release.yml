@@ -28,6 +28,16 @@ jobs:
       - name: Set repository name as env variable
         run: echo "repository_name=$(echo '${{ github.repository }}' | awk -F '/' '{print $2}')" >> $GITHUB_ENV
 
+      # Cache Gradle dependencies
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # Set up JDK
       - name: Set Up JDK
         uses: actions/setup-java@v4
         with:
