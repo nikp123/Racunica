@@ -371,9 +371,10 @@ class TaxCore {
 
             val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
             val inflater: LayoutInflater = activity.layoutInflater
-            val root: ViewGroup = activity.findViewById(R.id.receipt_extractor_layout)
 
-            builder.setView(inflater.inflate(R.layout.popup_receipt_extractor, root))
+            val view = inflater.inflate(R.layout.popup_receipt_extractor, null, false)
+
+            builder.setView(view)
             builder.setCancelable(false)
 
             dialog = builder.create()
