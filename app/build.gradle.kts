@@ -57,6 +57,7 @@ android {
 }
 
 dependencies {
+    // All the AppCompat things I actually use in my app
     implementation(libs.androidx.activity)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
@@ -66,17 +67,13 @@ dependencies {
     implementation(libs.androidx.navigation.fragment.ktx)
     implementation(libs.androidx.navigation.ui.ktx)
     implementation(libs.androidx.viewpager2)
-    implementation(libs.kotlinx.coroutines.core) // JVM
-    implementation(libs.kotlinx.coroutines.android) // Android
-    implementation(libs.material)
-    implementation(libs.okhttp)
-    implementation(libs.skrapeit)
-    implementation(libs.quickie.bundled)
+    implementation(libs.kotlinx.coroutines.core)    // JVM coroutines support
+    implementation(libs.kotlinx.coroutines.android) // Android coroutines support
+    implementation(libs.material)                   // REQUIRED for Material You colors
+    implementation(libs.okhttp)                     // HTTP lib that still works with Lollipop
+    implementation(libs.skrapeit)                   // Our scraping library
+    implementation(libs.quickie.bundled)            // QR code magic
     testImplementation(libs.junit)
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.mockito.core)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 
     // Room library (abstraction over SQLite)
     implementation(libs.room.runtime)

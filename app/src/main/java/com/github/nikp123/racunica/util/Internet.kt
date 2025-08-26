@@ -6,16 +6,15 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
 import androidx.annotation.RequiresPermission
-import it.skrape.fetcher.NonBlockingFetcher
+import it.skrape.fetcher.BlockingFetcher
 import it.skrape.fetcher.Request
 import it.skrape.fetcher.Result
 import okhttp3.OkHttpClient
 
-object OkHttpFetcher : NonBlockingFetcher<Request> {
+object OkHttpFetcher : BlockingFetcher<Request> {
     override val requestBuilder: Request get() = Request()
 
-    @Suppress("BlockingMethodInNonBlockingContext")
-    override suspend fun fetch(request: Request): Result = OkHttpClient().newCall(
+    override fun fetch(request: Request): Result = OkHttpClient().newCall(
         okhttp3.Request.Builder()
             .url(request.url)
             .build()

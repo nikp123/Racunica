@@ -10,15 +10,14 @@ import com.github.nikp123.racunica.data.ReceiptStore
 import com.github.nikp123.racunica.data.Store
 import com.github.nikp123.racunica.data.StoreStatus
 import it.skrape.core.htmlDocument
-import it.skrape.fetcher.BrowserFetcher
-import it.skrape.fetcher.HttpFetcher
+import it.skrape.fetcher.BlockingFetcher
+import it.skrape.fetcher.Request
 import it.skrape.fetcher.response
 import it.skrape.fetcher.skrape
 import it.skrape.selects.html5.pre
 import it.skrape.selects.html5.span
 import java.net.URI
 import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlin.String
 import kotlin.collections.map
@@ -216,10 +215,12 @@ class TaxCore {
             val receiptText: String,
             val store: Store
         )
-        internal suspend fun fullScrape(): FullReceiptScrapeResult? {
+        internal fun fullScrape(
+                scraper: BlockingFetcher<Request> = OkHttpFetcher
+            ): FullReceiptScrapeResult? {
             return try {
                 // HttpFetcher is broken
-                skrape(OkHttpFetcher) {
+                skrape(scraper) {
                     request {
                         this.url = uri.toString()
                     }
@@ -270,7 +271,7 @@ class TaxCore {
             }
         }
 
-        suspend fun fetchReceiptAndStore(activity: Activity, assignExistingBillId: Long?): ReceiptStore {
+        fun fetchReceiptAndStore(activity: Activity, assignExistingBillId: Long?): ReceiptStore {
             val storeCode = this.requestedBy + "-" + this.signedBy
 
             val placeholder = FullReceiptScrapeResult(
