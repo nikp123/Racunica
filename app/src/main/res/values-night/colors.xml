@@ -5,21 +5,21 @@
     <!-- Add any more colours you need here -->
 
     <!-- Dark Theme -->
-    <color name="colorPrimaryDark">#4CDAD0</color>
-    <color name="colorOnPrimaryDark">#003732</color>
-    <color name="colorPrimaryContainerDark">#005049</color>
-    <color name="colorOnPrimaryContainerDark">#74F8EB</color>
+    <color name="colorPrimary">#4CDAD0</color>
+    <color name="colorOnPrimary">#003732</color>
+    <color name="colorPrimaryContainer">#005049</color>
+    <color name="colorOnPrimaryContainer">#74F8EB</color>
 
-    <color name="colorSecondaryDark">#B0CCC8</color>
-    <color name="colorOnSecondaryDark">#1B3532</color>
-    <color name="colorSecondaryContainerDark">#324B47</color>
-    <color name="colorOnSecondaryContainerDark">#CDE8E3</color>
+    <color name="colorSecondary">#B0CCC8</color>
+    <color name="colorOnSecondary">#1B3532</color>
+    <color name="colorSecondaryContainer">#324B47</color>
+    <color name="colorOnSecondaryContainer">#CDE8E3</color>
 
-    <color name="colorBackgroundDark">#191C1B</color>
-    <color name="colorOnBackgroundDark">#E0E3E1</color>
+    <color name="colorBackground">#191C1B</color>
+    <color name="colorOnBackground">#E0E3E1</color>
 
-    <color name="colorSurfaceDark">#1F2423</color>
-    <color name="colorOnSurfaceDark">#E0E3E1</color>
+    <color name="colorSurface">#1F2423</color>
+    <color name="colorOnSurface">#E0E3E1</color>
 
     <!-- Theme universal -->
     <color name="colorError">#B3261E</color>
