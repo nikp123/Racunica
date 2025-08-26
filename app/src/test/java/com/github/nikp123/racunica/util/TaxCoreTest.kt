@@ -2,13 +2,12 @@ package com.github.nikp123.racunica.util
 
 import com.github.nikp123.racunica.util.TaxCore.SimpleReceipt
 import it.skrape.fetcher.BrowserFetcher
-import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import java.net.URI
 
 class TaxCoreTest {
     @Test fun testFullDecodeRS() {
-        runBlocking {   // Test1
+        if(true) {   // Test1
             val url =
                 "https://suf.purs.gov.rs/v/?vl=A1JDUVJYQlI1UkNRUlhCUjWtVwMAC1QDADCFJwAAAAAAAAABi/HkkdQAAABBtDdO5vacnuZ1owLigYxPWWj54+xYqU9Q8N2pKmmBaOGrcfLRY10Z8Y9Gszt3ez/hkP4IPqzgZOdScMIaKIZrHAlYI6xnq/hDGJfNNImsdqXYm1rzQeniOW4/jCTgXS9HNr/XKGuKA6HCuO5K48bKkhPvIFvRhLfjcWMQAIwNApOXT1ob13uTfXJ0ZkOuluTmeoJXkEshfG8VNzgt3Um9Y20HY8sLCVxoyY+wdKUj9LO2PN0rLx4WM6KTnzasB4fWlOJ6CYLxF0LxHPxxeLqEg6X5AV5yfnhkyNm2eQgQXcMrApDzNfvrIGYJWpoEOKySg608HoKWkB4nYSfZMERMoHxIA2R7wU2Qmpds3lmRKWy0Rkqv3C79HCTIGuxkuUVzY4ACqIxbRheIHiExXNnImuCkMjt/oErHvXznGkQmtX0HMCz/ABfON5SMQzG5ZlqMKVFUR/6ofWmVp+rmJEwUSotp6R3V/Xwpkpz2pPP87SE2SYvP61l9B7JP7TwZgBk3Gset9X2zdFkHhAALcJAsxXTOuKg/tBkQ0h2TtumQuk0vImx3t5cUgyk8dXfFjK0/xxWlRXg2wiIXg5L8/XlV8PCcF1xZJ0PS/Ey5tUeFttsk5Lk9bN5Ey39FCA4NXrjy1MkQt70TV8m4euwkCt/lZUXGp73PZoSJXS9i7TnQHiI5XXCwhGdJ8E53/qULOq0="
 
@@ -26,7 +25,7 @@ class TaxCoreTest {
             assert(receipt.buyerID == null)
 
             // TODO store test
-            val receipt_text = receipt.fullScrape(BrowserFetcher)!!.component1()
+            val (receipt_text, store) = receipt.fullScrape(BrowserFetcher).getOrThrow()
             val correct_receipt =
                 "<pre style=\"font-family:monospace; width: fit-content; margin: 0 auto; text-align: center;\">\n" +
                         "============ ФИСКАЛНИ РАЧУН ============\n" +
@@ -65,7 +64,7 @@ class TaxCoreTest {
             assert(receipt_text == correct_receipt)
         }
 
-        runBlocking {   // Test2
+        if(true) {   // Test2
             val url =
                 "https://suf.purs.gov.rs/v/?vl=A1AyR1FWR1FMUDJHUVZHUUzBCwEAeAsBAMAJDgAAAAAAAAABlsYgcOgAAABcbMVDqbIut7VkyShm6VvRT8Mw0T9ePDSRzm%2BzUCbJaQV4I6OOJsujB8YIHnYcp4yeWAVCUFSnVp4Z76Z0xVyQm%2FegcoqHxOs6mJwCc9zzuHZLTP2Rm6WPY6%2FxBtQtGIsFAdtZsCP9xcQNlm8zveYuyBcEcYNINGG6OMDpna%2F%2Bb2TZJcLzNod7zcgvEUdaY2Ut5A3TnAWQmCBjcD6eBdbzkXEwqQztRpe73SmOFKTO5NExdwxPX%2BkLGYZlTp1zVNMRC61GaI4Q2jf7olQ%2Fy4LDvXOVQz2m1zCtp7Z%2FNhd9aFfKnLCDudzbEqucmTVOG0j3sZCdFqv82f6tycHjw3snne0QtRZJuspj4CGe646tVqisei7LxoV3JuXi6EVFPlkhsl5%2B3ioI7kGDOZPcoGbmcp%2B%2FOZFCmagUPRp7sJTa2aKwxsxqXqJ3kuJIRZlqVbbEsewyk2yDKTEvYb1QC5ffVYw9FrRq1ChX%2FMKqJeW1T8Azr%2BKTXJes7eZx9DDCRTHXMYKPYZ%2BmGpHNppO%2F%2FijjLxrwb%2FODXQ0LFhbBqTvm2Jzp0oUjo7NyG0mo9mPN11axF8juHzC4OnY6uN0onk%2B9Oa0fVFqxlTQkYy0E5p%2FlONYB5UbvMddXoquA%2FDdtUqnvJnkYfajZdkCaxHN1dk4QbyQjXIVqKSAtPzzx25KAX8z97fyPK8HJE2x142ZJo60%3D"
             val receipt = SimpleReceipt(URI.create(url))
@@ -81,7 +80,7 @@ class TaxCoreTest {
             assert(receipt.transactionType == SimpleReceipt.TransactionType.SALE)
             assert(receipt.buyerID == null)
 
-            val receipt_text = receipt.fullScrape(BrowserFetcher)!!.component1()
+            val (receipt_text, store) = receipt.fullScrape(BrowserFetcher).getOrThrow()
             val correct_receipt = "<pre style=\"font-family:monospace; width: fit-content; margin: 0 auto; text-align: center;\">\n" +
                     "============ ФИСКАЛНИ РАЧУН ============\n" +
                     "               106363820                \n" +
@@ -121,7 +120,7 @@ class TaxCoreTest {
     }
 
     @Test fun testFullDecodeBiH() {
-        runBlocking {
+        if(true) {
             val url =
                 "https://suf.poreskaupravars.org/v/?vl=A05KNEJFSDRITko0QkVINEikvwIAaLcCANhHAwAAAAAAAAABl5wIomAAAACy87rImxkBmysYi+mgmwswwcAN5Lfw6BSjY/g3YtkDOV5ikl0Xfnn4+q4K5eWIMYNlaeuYiLNYNXcKopA/MS48c7OqyUjtWX06Fuc4vXwLMVcRa8sDDB9iYAeLsj902yt5Ll69GoKvj+T6/nobhWxE1kY7D2Rn+az0+eJ7UcBLxtaLgV6W5Qi43W8NWuf1+65KPJRr/i5zO1iaRD4UIwrXg0g1a2MqoM2EqgUhqpqy4gtFA4JAau6BI/dhxzxiukjAWE1Zm0fxiuNWbvsTnFlyX/oI9Kzj0xpoVkoy/b9peclmv8+anXR4yelpEQJD8vFgTv8/BHt7Ysbqv1q2ZdwQIsKtuqV+RsXwULdsfDj2WQcj4Kcwjumhoo7TNDcdyBV8S7AwxHE+Oj9zy5OV1nPFY70HmQJ66m2zjiB790G9ZUGzRCgSWzQALu5sbXL2/e+lATf3ZAPyELd1DbmqGGxJqFVDW7hKSF/qUNasyvJVHhfOSRvdxkl7CSwm8gLmx4Q83DQGyqSoMww8QEQjICrC5hnPnG62e1z9QFtLcKzEdNkLgBELua6uwNLIb6TjfPxh0fofMJJvjGbidTbjWz50fQZM9moFu0ga/Fy1ouixNC96gb964IO40ev+mwTxsxEvnMaeRwPcBLvVrqI5Hmkso9FPFJZF1c9xsKktr3SczeWmNoa1l8R6BPMIuLnToX0="
 
@@ -139,7 +138,7 @@ class TaxCoreTest {
             assert(receipt.buyerID == null)
 
             // TODO store test
-            val receipt_text = receipt.fullScrape(BrowserFetcher)!!.component1()
+            val (receipt_text, store) = receipt.fullScrape(BrowserFetcher).getOrThrow()
             val correct_receipt =
                 "<pre style=\"font-family:monospace; width: fit-content; margin: 0 auto; text-align: center;\">\n" +
                         "============ ФИСКАЛНИ РАЧУН ============\n" +
