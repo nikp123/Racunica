@@ -11,11 +11,13 @@ import com.github.nikp123.racunica.data.Store
 import com.github.nikp123.racunica.data.StoreStatus
 import it.skrape.core.htmlDocument
 import it.skrape.fetcher.BrowserFetcher
+import it.skrape.fetcher.HttpFetcher
 import it.skrape.fetcher.response
 import it.skrape.fetcher.skrape
 import it.skrape.selects.html5.pre
 import it.skrape.selects.html5.span
 import java.net.URI
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import kotlin.String
@@ -160,8 +162,8 @@ class TaxCore {
             }
 
             try {
-                requestedBy = String(data.sliceArray(1 until 9), StandardCharsets.UTF_8)
-                signedBy = String(data.sliceArray(9 until 17), StandardCharsets.UTF_8)
+                requestedBy = String(data.sliceArray(1 until 9), Charset.forName("UTF-8"))
+                signedBy = String(data.sliceArray(9 until 17), Charset.forName("UTF-8"))
                 totalTransactions = (((data[20].toUInt() and 0xFFu) shl 24) or
                         ((data[19].toUInt() and 0xFFu) shl 16) or
                         ((data[18].toUInt() and 0xFFu) shl 8) or
@@ -214,10 +216,10 @@ class TaxCore {
             val receiptText: String,
             val store: Store
         )
-        internal fun fullScrape(): FullReceiptScrapeResult? {
+        internal suspend fun fullScrape(): FullReceiptScrapeResult? {
             return try {
                 // HttpFetcher is broken
-                skrape(BrowserFetcher) {
+                skrape(OkHttpFetcher) {
                     request {
                         this.url = uri.toString()
                     }
@@ -268,7 +270,7 @@ class TaxCore {
             }
         }
 
-        fun fetchReceiptAndStore(activity: Activity, assignExistingBillId: Long?): ReceiptStore {
+        suspend fun fetchReceiptAndStore(activity: Activity, assignExistingBillId: Long?): ReceiptStore {
             val storeCode = this.requestedBy + "-" + this.signedBy
 
             val placeholder = FullReceiptScrapeResult(

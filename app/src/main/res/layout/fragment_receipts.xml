@@ -31,6 +31,7 @@
             android:layout_height="100dp"
             android:layout_margin="30dp"
             android:clickable="true"
+            android:focusable="true"
             android:src="@drawable/ic_camera_add_photo"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />

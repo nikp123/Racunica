@@ -62,4 +62,11 @@
     <string name="receipt_details_store_note">Leave a note for this business</string>
     <string name="receipt_store_enter_custom_name">Add a custom name to this business</string>
     <string name="receipt_options_delete">Delete this receipt</string>
+    <string name="relative_time_future">From the future</string>
+    <string name="relative_time_very_short">Just now</string>
+    <string name="relative_time_minutes">%1$d minute(s) ago</string>
+    <string name="relative_time_hours">%1$d hour(s) ago</string>
+    <string name="relative_time_days">%1$d day(s) ago</string>
+    <string name="relative_time_months">%1$d month(s) ago</string>
+    <string name="relative_time_years">%1$d year(s) ago</string>
 </resources>

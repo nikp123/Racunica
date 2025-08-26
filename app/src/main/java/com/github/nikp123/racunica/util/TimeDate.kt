@@ -1,22 +1,34 @@
 package com.github.nikp123.racunica.util
 
-import android.util.Log
-import java.time.Instant
-import java.time.Duration
+import android.content.Context
+import com.github.nikp123.racunica.R
 
-fun unixTimeToRelativeTime(unixTime: Long): String {
-    val instant = Instant.ofEpochMilli(unixTime)
-    val now = Instant.now()
-
-    val duration = Duration.between(instant, now)
+fun unixTimeToRelativeTime(unixTime: Long, context: Context): String {
+    val now = System.currentTimeMillis()
+    val duration = (now - unixTime) / 1000
+    val res = context.resources
 
     return when {
-        duration.seconds < 0     -> "From the future :O"
-        duration.toMinutes() < 1 -> "Just now"
-        duration.toHours() < 1   -> "${duration.toMinutes()} minutes ago"
-        duration.toDays() < 1    -> "${duration.toHours()} hours ago"
-        duration.toDays() < 30   -> "${duration.toDays()} days ago"
-        duration.toDays() < 365  -> "${duration.toDays() / 30} months ago"
-        else                     -> "${duration.toDays() / 365} years ago"
-        }
+        // From the future
+        duration < 0                  -> res.getString(R.string.relative_time_future)
+        // Less than a minute
+        duration < 60                 -> res.getString(R.string.relative_time_very_short)
+        // Less than an hour
+        duration < 3600               -> res.getString(
+            R.string.relative_time_minutes, duration/60)
+        // Less than a day
+        duration < 3600 * 24          -> res.getString(
+            R.string.relative_time_hours, duration/3600)
+        // Less than a month
+        duration < 3600 * 24 * 31     -> res.getString(
+            R.string.relative_time_days, duration/(3600*24))
+        // Less than a year
+        duration < 3600 * 24 * 365.25 -> res.getString(
+            R.string.relative_time_months, (duration/(3600*24*30.4375)).toLong()
+        )
+        // More than a year
+        else                          -> res.getString(
+            R.string.relative_time_years, (duration/(3600*24*365.25)).toLong()
+        )
+    }
 }

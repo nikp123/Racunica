@@ -16,9 +16,12 @@ import com.github.nikp123.racunica.ReceiptOverviewActivity
 
 class ReceiptAdapter(private var receiptStores: List<ReceiptStore> = emptyList()) :
     RecyclerView.Adapter<ReceiptAdapter.ListViewHolder>() {
+    private lateinit var context: Context
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.element_receipt, parent, false);
+        context = parent.context
+
+        val itemView = LayoutInflater.from(context).inflate(R.layout.element_receipt, parent, false)
 
         return ListViewHolder(itemView)
     }
@@ -43,7 +46,7 @@ class ReceiptAdapter(private var receiptStores: List<ReceiptStore> = emptyList()
         // TODO: Offer other stores of value
         holder.unit.text = receipt.unit.toString() // Assuming we are only dealing with Serbia
         holder.time.text =
-            unixTimeToRelativeTime(receipt.time)
+            unixTimeToRelativeTime(receipt.time, context)
         holder.amount.text = String.format("%.2f", SimpleReceipt.getHumanAmount(receipt.amount,
             receipt.unit))
         holder.name.text        = store.usersName ?: (store.name ?: store.code)

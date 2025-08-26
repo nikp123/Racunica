@@ -142,8 +142,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="0"
                     android:text="@string/receipt_details_details"
-                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
-                    android:tooltipText="@string/receipt_details_details_explain" />
+                    android:textAppearance="@style/TextAppearance.Material3.BodyMedium" />
 
                 <TextView
                     android:id="@+id/receipt_details_details"

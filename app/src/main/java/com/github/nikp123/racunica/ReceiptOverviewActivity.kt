@@ -4,34 +4,34 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.github.nikp123.racunica.data.AppDatabase
-import com.github.nikp123.racunica.data.ReceiptStatus
-import com.github.nikp123.racunica.databinding.ActivityReceiptOverviewBinding
-import com.github.nikp123.racunica.util.TaxCore.SimpleReceipt
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.time.Instant
-import java.time.ZoneId
-import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
+import com.github.nikp123.racunica.data.AppDatabase
+import com.github.nikp123.racunica.data.ReceiptStatus
 import com.github.nikp123.racunica.data.ReceiptStore
 import com.github.nikp123.racunica.data.ReceiptStoreInterface
+import com.github.nikp123.racunica.databinding.ActivityReceiptOverviewBinding
 import com.github.nikp123.racunica.util.CountryToIDString
 import com.github.nikp123.racunica.util.TaxCore
+import com.github.nikp123.racunica.util.TaxCore.SimpleReceipt
+import com.google.android.material.textfield.TextInputEditText
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.URI
 import java.net.URLEncoder
+import java.nio.charset.Charset
 import java.nio.charset.StandardCharsets
-
-import android.widget.EditText
-import com.google.android.material.textfield.TextInputEditText
-import kotlinx.coroutines.Job
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 class ReceiptOverviewActivity : AppCompatActivity() {
 
@@ -67,9 +67,10 @@ class ReceiptOverviewActivity : AppCompatActivity() {
             SimpleReceipt.getHumanAmount(receipt.amount, receipt.unit),
             receipt.unit.toString()
         )
-        val zonedDateTime = ZonedDateTime.ofInstant(Instant.ofEpochMilli(receipt.time), ZoneId.systemDefault())
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss") // sad bald eagle moment
-        view.findViewById<TextView>(R.id.receipt_details_time).text = zonedDateTime.format(formatter)
+        val date = Date(receipt.time)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
+        dateFormat.timeZone = TimeZone.getDefault()
+        view.findViewById<TextView>(R.id.receipt_details_time).text = dateFormat.format(date)
         view.findViewById<TextView>(R.id.receipt_details_type).setText(when(receipt.type) {
             SimpleReceipt.TransactionType.SALE ->    R.string.receipt_details_type_sale
             SimpleReceipt.TransactionType.REFUND ->  R.string.receipt_details_type_refund
@@ -165,7 +166,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
 
                     address += ", " + resources.getString(CountryToIDString(store.country))
 
-                    val locationString = "geo:0,0?q=" + URLEncoder.encode(address, StandardCharsets.UTF_8.toString())
+                    val locationString = "geo:0,0?q=" + URLEncoder.encode(address, "UTF-8")
 
                     val intent = Intent(Intent.ACTION_VIEW).apply {
                         data = locationString.toUri()

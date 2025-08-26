@@ -69,6 +69,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core) // JVM
     implementation(libs.kotlinx.coroutines.android) // Android
     implementation(libs.material)
+    implementation(libs.okhttp)
     implementation(libs.skrapeit)
     implementation(libs.quickie.bundled)
     testImplementation(libs.junit)

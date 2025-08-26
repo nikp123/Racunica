@@ -15,7 +15,6 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="@drawable/ic_receipt_foreground"
-        android:clipToOutline="true"
         android:scaleType="centerCrop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"

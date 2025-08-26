@@ -14,6 +14,7 @@ lifecycleLivedataKtx = "2.9.2"
 lifecycleViewmodelKtx = "2.9.2"
 activity = "1.10.1"
 mockitoCore = "4.0.0"
+okhttp = "5.1.0"
 quickieBundled = "1.11.0"
 
 room-runtime = "2.7.2"
@@ -41,6 +42,7 @@ androidx-lifecycle-livedata-ktx = { group = "androidx.lifecycle", name = "lifecy
 androidx-lifecycle-viewmodel-ktx = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-ktx", version.ref = "lifecycleViewmodelKtx" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockitoCore" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 quickie-bundled = { module = "io.github.g00fy2.quickie:quickie-bundled", version.ref = "quickieBundled" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room-compiler" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room-runtime" }
