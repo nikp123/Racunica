@@ -26,8 +26,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URI
 import java.net.URLEncoder
-import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -116,23 +114,35 @@ class ReceiptOverviewActivity : AppCompatActivity() {
 
                     // Do networking on a separate thread to prevent UI lockups
                     lifecycleScope.launch {
+                        val res = activity.resources
+
                         // Access the database globally
-                        val newReceipt = withContext(Dispatchers.IO) {
-                            var pair = simple.fetchReceiptAndStore(activity, receipt.id)
+                        val error = withContext(Dispatchers.IO) {
+                            val (pair, error) = simple.fetchReceiptAndStore(activity, receipt.id)
+
                             val db = AppDatabase.getDatabase(applicationContext)
                             val receiptStoreInterface = ReceiptStoreInterface(db)
                             receiptStoreInterface.insertOrUpdate(pair)
 
-                            pair.receipt
+                            error
+                        }
+
+                        val errorMessage = if(error is SimpleReceipt.FetchInvalidCertificate) {
+                            res.getString(R.string.ssl_exception, error.message)
+                        } else if(error != null) {
+                            res.getString(R.string.unknown_failure, error.message)
+                        } else null
+
+                        val message = when(error == null) {
+                            true  -> res.getString(R.string.receipt_options_try_fetching_success)
+                            false -> res.getString(R.string.receipt_fetch_failure,
+                                errorMessage)
                         }
 
                         Toast.makeText(
                             applicationContext,
-                            when(newReceipt.status == ReceiptStatus.ONLINE) {
-                                true -> R.string.receipt_options_try_fetching_success
-                                false -> R.string.receipt_options_try_fetching_failed
-                            },
-                            Toast.LENGTH_SHORT
+                            message,
+                            Toast.LENGTH_LONG
                         ).show()
 
                         extractor.close()

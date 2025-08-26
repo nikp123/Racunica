@@ -3,6 +3,8 @@ package com.github.nikp123.racunica.util
 import android.app.Activity
 import android.app.AlertDialog
 import android.view.LayoutInflater
+import android.view.ViewGroup
+import ch.qos.logback.core.net.ssl.SSL
 import com.github.nikp123.racunica.R
 import com.github.nikp123.racunica.data.Receipt
 import com.github.nikp123.racunica.data.ReceiptStatus
@@ -19,6 +21,8 @@ import it.skrape.selects.html5.span
 import java.net.URI
 import java.nio.charset.Charset
 import java.security.MessageDigest
+import java.util.Locale
+import javax.net.ssl.SSLHandshakeException
 import kotlin.String
 import kotlin.collections.map
 import kotlin.io.encoding.Base64
@@ -38,6 +42,9 @@ class TaxCore {
         class InvalidHash(message: String) : Exception(message)
         class DecodeError(message: String) : Exception(message)
         class UnsupportedCountry() : Exception()
+        class FetchInvalidCertificate(message: String?) : Exception(message)
+        class FetchGeneralFailure(message: String?) : Exception(message)
+
 
         val TAXCORE_VERSON_NUMBER = 3
 
@@ -213,14 +220,15 @@ class TaxCore {
         // @return - Returns the HTML of the receipt itself
         data class FullReceiptScrapeResult(
             val receiptText: String,
-            val store: Store
+            val store: Store,
         )
         internal fun fullScrape(
                 scraper: BlockingFetcher<Request> = OkHttpFetcher
-            ): FullReceiptScrapeResult? {
+            ): Result<FullReceiptScrapeResult> {
+
             return try {
                 // HttpFetcher is broken
-                skrape(scraper) {
+                Result.success(skrape(scraper) {
                     request {
                         this.url = uri.toString()
                     }
@@ -265,13 +273,15 @@ class TaxCore {
                             )
                         }
                     }
-                }
+                })
+            } catch(e: SSLHandshakeException) {
+                Result.failure(FetchInvalidCertificate(e.message))
             } catch(e: Exception) {
-                null
+                Result.failure(FetchGeneralFailure(e.message))
             }
         }
 
-        fun fetchReceiptAndStore(activity: Activity, assignExistingBillId: Long?): ReceiptStore {
+        fun fetchReceiptAndStore(activity: Activity, assignExistingBillId: Long?): Pair<ReceiptStore, Throwable?> {
             val storeCode = this.requestedBy + "-" + this.signedBy
 
             val placeholder = FullReceiptScrapeResult(
@@ -289,19 +299,27 @@ class TaxCore {
                 )
             )
 
+            var exception: Throwable? = null
+
             val result = when (activity.baseContext.hasInternetConnection()) {
-                true -> this.fullScrape() ?: placeholder
-                false -> placeholder
+                true -> {
+                    val scrape = this.fullScrape()
+                    if(scrape.isFailure) {
+                        exception = scrape.exceptionOrNull()
+                        placeholder
+                    } else scrape.getOrThrow()
+                }
+                false -> { placeholder }
             }
 
-            return ReceiptStore(
+            return Pair(ReceiptStore(
                 receipt = Receipt(
                     id = assignExistingBillId ?: 0,
                     amount = this.totalAmount,
                     unit = this.unit,
                     time = this.timestamp,
                     storeID = 0, // This MUST be set later otherwise we got nasty bugs
-                    code  = String.format("%d", this.totalTransactions),
+                    code  = String.format(Locale.getDefault(), "%d", this.totalTransactions),
                     purchaserCode = this.buyerID,
                     status = when (result.receiptText.isEmpty()) {
                         true ->  ReceiptStatus.OFFLINE
@@ -317,7 +335,7 @@ class TaxCore {
                     note = null,
                 ),
                 store = result.store
-            )
+            ), exception)
         }
 
         companion object {
@@ -335,7 +353,7 @@ class TaxCore {
     }
 
     // Warning: You HAVE to call close() on this, otherwise the spinner will not disappear!
-    class ReceiptExtractor : AutoCloseable {
+    class ReceiptExtractor {
         enum class Country {
             RS,        // Serbia
             BA;        // Bosnia
@@ -353,8 +371,9 @@ class TaxCore {
 
             val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
             val inflater: LayoutInflater = activity.layoutInflater
+            val root: ViewGroup = activity.findViewById(R.id.receipt_extractor_layout)
 
-            builder.setView(inflater.inflate(R.layout.popup_receipt_extractor, null))
+            builder.setView(inflater.inflate(R.layout.popup_receipt_extractor, root))
             builder.setCancelable(false)
 
             dialog = builder.create()
@@ -376,7 +395,7 @@ class TaxCore {
             return SimpleReceipt(uri)
         }
 
-        override fun close() {
+        fun close() {
             dialog.hide()
         }
     }

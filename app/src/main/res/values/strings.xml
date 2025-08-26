@@ -51,9 +51,8 @@
     <string name="receipt_options_store_rename">Change the name of this business</string>
     <string name="store_rename">Type in the new business name</string>
 
-    <string name="scanner_taxcore_receipt_exists">This receipt already exists!</string>
+    <string name="receipt_exists">This receipt already exists!</string>
     <string name="receipt_options_try_fetching_success">Successfully got full receipt!</string>
-    <string name="receipt_options_try_fetching_failed">Failed to obtain the full receipt!</string>
 
     <string name="country_name_serbia">Serbia</string>
     <string name="country_name_bosnia">Bosnia and Herzegovina</string>
@@ -64,9 +63,30 @@
     <string name="receipt_options_delete">Delete this receipt</string>
     <string name="relative_time_future">From the future</string>
     <string name="relative_time_very_short">Just now</string>
-    <string name="relative_time_minutes">%1$d minute(s) ago</string>
-    <string name="relative_time_hours">%1$d hour(s) ago</string>
-    <string name="relative_time_days">%1$d day(s) ago</string>
-    <string name="relative_time_months">%1$d month(s) ago</string>
-    <string name="relative_time_years">%1$d year(s) ago</string>
+    <plurals name="relative_time_minutes">
+        <item quantity="one">%d minute ago</item>
+        <item quantity="other">%d minutes ago</item>
+    </plurals>
+    <plurals name="relative_time_hours">
+        <item quantity="one">%d hour ago</item>
+        <item quantity="other">%d hours ago</item>
+    </plurals>
+    <plurals name="relative_time_days">
+        <item quantity="one">%d day ago</item>
+        <item quantity="other">%d days ago</item>
+    </plurals>
+    <plurals name="relative_time_months">
+        <item quantity="one">%d month ago</item>
+        <item quantity="two"></item>
+        <item quantity="other">%d months ago</item>
+    </plurals>
+    <plurals name="relative_time_years">
+        <item quantity="one">%d year ago</item>
+        <item quantity="other">%d years ago</item>
+    </plurals>
+
+    <string name="receipt_fetch_failure">Failed to obtain the full receipt!\n%1$s</string>
+    <string name="ssl_exception">SSL failure: $1%s</string>
+    <string name="unknown_failure">Unknown reason: $1%s</string>
+    <string name="receipt_new_scan">Scan new receipt</string>
 </resources>

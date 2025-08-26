@@ -33,6 +33,7 @@
             android:clickable="true"
             android:focusable="true"
             android:src="@drawable/ic_camera_add_photo"
+            android:contentDescription="@string/receipt_new_scan"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

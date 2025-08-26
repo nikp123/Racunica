@@ -13,7 +13,7 @@ class ReceiptStoreInterface(
 
     @Transaction
     suspend fun insertOrUpdate(pair: ReceiptStore): Long {
-        var (newReceipt, newStore) = pair
+        val (newReceipt, newStore) = pair
         // The logic is as follows:
 
         // When we insert a new Receipt, it always comes with the corresponding Store
@@ -44,7 +44,7 @@ class ReceiptStoreInterface(
             // this branch does not return value to storeID, look below
             when(existingStore.status) {
                 StoreStatus.OFFLINE, StoreStatus.ONLINE_FAILURE -> storeDAO.update(newStore.copy(
-                    id        = existingStore.id,
+                    id           = existingStore.id,
                     // usersName should NEVER be set by business logic
                     usersName    = existingStore.usersName,
                     note         = existingStore.note,
@@ -72,7 +72,8 @@ class ReceiptStoreInterface(
                 existingReceipt.status == ReceiptStatus.ONLINE_FAILURE) {
             receiptDAO.update(newReceipt.copy(
                 id = existingReceipt.id,
-                note = existingReceipt.note
+                note = existingReceipt.note,
+                storeID = storeID
             ))
             existingReceipt.id
         } else -1L

@@ -11,6 +11,7 @@
 
     <!-- Transaction type -->
     <ImageView
+        android:contentDescription="@string/receipt_id"
         android:id="@+id/transactionType"
         android:layout_width="48dp"
         android:layout_height="48dp"

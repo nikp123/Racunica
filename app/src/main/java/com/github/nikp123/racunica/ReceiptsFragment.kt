@@ -20,6 +20,7 @@ import com.github.nikp123.racunica.data.AppDatabase
 import com.github.nikp123.racunica.data.ReceiptStoreInterface
 
 import com.github.nikp123.racunica.util.TaxCore
+import com.github.nikp123.racunica.util.TaxCore.SimpleReceipt
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import io.github.g00fy2.quickie.ScanCustomCode
@@ -34,6 +35,8 @@ import java.net.URI
 class ReceiptsFragment : Fragment() {
     private lateinit var receiptStoreAdapter: ReceiptAdapter
     private lateinit var receiptStoreViewModel: ReceiptStoreViewModel
+
+    class EntryAlreadyExists() : Exception()
 
     private val scanQR = registerForActivityResult(ScanCustomCode()) {
         result -> processScan(requireActivity(), result)
@@ -64,20 +67,24 @@ class ReceiptsFragment : Fragment() {
         val simple = extractor.getSimple()
 
         lifecycleScope.launch {
+            val res = activity.resources
+
             // Access the database globally
             val db = AppDatabase.getDatabase(activity)
 
-            var insertResult = withContext(Dispatchers.IO) {
+            var error = withContext(Dispatchers.IO) {
                 val receiptStoreInterface = ReceiptStoreInterface(db.receiptDAO(), db.storeDAO())
-                val pair = simple.fetchReceiptAndStore(activity, null)
-                receiptStoreInterface.insertOrUpdate(pair)
+                var (pair, error) = simple.fetchReceiptAndStore(activity, null)
+
+                val insertResult = receiptStoreInterface.insertOrUpdate(pair)
+                if(insertResult == -1L) {
+                    error = EntryAlreadyExists()
+                }
+
+                error
             }
 
-            if (insertResult == -1L) {
-                Toast.makeText(activity,
-                    resources.getString(R.string.scanner_taxcore_receipt_exists),
-                    Toast.LENGTH_SHORT).show()
-            } else {
+            if (error == null) {
                 Toast.makeText(
                     activity,
                     resources.getString(
@@ -88,14 +95,27 @@ class ReceiptsFragment : Fragment() {
                     ),
                     Toast.LENGTH_SHORT
                 ).show()
+            } else if(error is EntryAlreadyExists) {
+                Toast.makeText(activity,
+                    R.string.receipt_exists,
+                    Toast.LENGTH_SHORT).show()
+            } else {
+                // Replace with error dictionary once you get to it
+                val errorMessage = if(error is SimpleReceipt.FetchInvalidCertificate) {
+                    res.getString(R.string.ssl_exception, error.message)
+                } else {
+                    res.getString(R.string.unknown_failure, error.message)
+                }
+
+                Toast.makeText(activity,
+                    res.getString(
+                        R.string.receipt_fetch_failure, errorMessage
+                    ),
+                    Toast.LENGTH_LONG).show()
             }
 
             extractor.close()
         }
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onCreateView(

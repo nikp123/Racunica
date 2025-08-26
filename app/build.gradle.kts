@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.jetbrainsKotlinAndroid)
 
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -43,10 +43,18 @@ android {
       targetCompatibility = JavaVersion.VERSION_11
   }
   kotlinOptions {
-      jvmTarget = "11"
+    jvmTarget = "11" // Set to the same version as Java
   }
+
   buildFeatures {
       viewBinding = true
+  }
+
+  configurations {
+    all {
+      exclude(module = "httpclient")
+      exclude(module = "commons-logging")
+    }
   }
   packaging {
       resources {

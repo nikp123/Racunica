@@ -55,6 +55,10 @@ class ReceiptAdapter(private var receiptStores: List<ReceiptStore> = emptyList()
             SimpleReceipt.TransactionType.SALE   -> R.drawable.ic_receipt_foreground
             SimpleReceipt.TransactionType.REFUND -> R.drawable.ic_money_foreground
         })
+        // Help blind users navigate the list.
+        // Though, admittedly I have no idea how to do this properly :(
+        if(holder.name.text != null)
+            holder.type.contentDescription = holder.name.text
         holder.receiptNote.visibility = when(receipt.note != null) {
             true -> View.VISIBLE; false -> View.GONE
         }

@@ -1,10 +1,10 @@
 [versions]
 agp = "8.12.1"
-kotlin = "2.1.0"
+kotlin = "2.2.10"
 coreKtx = "1.17.0"
 junit = "4.13.2"
-kotlinxCoroutinesAndroid = "1.8.1"
-kotlinxCoroutinesCore = "1.8.1"
+kotlinxCoroutinesAndroid = "1.10.2"
+kotlinxCoroutinesCore = "1.10.2"
 material = "1.12.0"
 constraintlayout = "2.2.1"
 lifecycleLivedataKtx = "2.9.2"
@@ -20,6 +20,7 @@ viewpager2 = "1.1.0"
 appcompatVersion = "1.7.1"
 navigationFragmentKtx = "2.9.3"
 navigationUiKtx = "2.9.3"
+ksp = "2.2.10-2.0.2"
 
 
 [libraries]
@@ -47,4 +48,4 @@ skrapeit = { module = "it.skrape:skrapeit", version.ref = "skrapeit" }
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
