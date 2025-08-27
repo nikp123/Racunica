@@ -24,7 +24,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.URI
 import java.net.URLEncoder
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -58,7 +57,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
         supportActionBar?.title = title
 
         // Receipt details
-        receiptNote = view.findViewById<TextInputEditText>(R.id.receipt_details_note)
+        receiptNote = view.findViewById(R.id.receipt_details_note)
         receiptNote.setText(receipt.note)
         view.findViewById<TextView>(R.id.receipt_details_amount).text = String.format(
             "%.02f %s",
@@ -85,7 +84,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
             view.findViewById<TextView>(R.id.receipt_details_purchaser_id).text = receipt.purchaserCode
 
         // Store
-        storeCustomName = view.findViewById<EditText>(R.id.receipt_store_custom_name)
+        storeCustomName = view.findViewById(R.id.receipt_store_custom_name)
         if (store.usersName != null) storeCustomName.setText(store.usersName)
         if(store.municipality != null)
             view.findViewById<TextView>(R.id.receipt_details_store_municipality).text = store.municipality
@@ -95,7 +94,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
             view.findViewById<TextView>(R.id.receipt_details_store_address).text = store.address
         if(store.name != null)
             view.findViewById<TextView>(R.id.receipt_details_store_registered_name).text = store.name
-        storeNote = view.findViewById<TextInputEditText>(R.id.receipt_details_store_note)
+        storeNote = view.findViewById(R.id.receipt_details_store_note)
         storeNote.setText(store.note)
         view.findViewById<TextView>(R.id.receipt_details_store_id).text = store.code
 
@@ -108,44 +107,38 @@ class ReceiptOverviewActivity : AppCompatActivity() {
         when (receipt.status) {
             ReceiptStatus.OFFLINE, ReceiptStatus.ONLINE_FAILURE -> {
                 fetchOrOpenReceipt.setOnClickListener {
-                    val extractor = TaxCore.ReceiptExtractor(this, uri = URI.create(receipt.url))
-                    val simple = extractor.getSimple()
+                    val alert = ReceiptProcessorAlert(this)
+                    val extractor = TaxCore.ReceiptExtractor(receipt.url.toByteArray())
                     val activity = this
+                    val context = this.applicationContext
 
                     // Do networking on a separate thread to prevent UI lockups
                     lifecycleScope.launch {
-                        val res = activity.resources
-
-                        // Access the database globally
-                        val error = withContext(Dispatchers.IO) {
-                            val (pair, error) = simple.fetchReceiptAndStore(activity, receipt.id)
-
-                            val db = AppDatabase.getDatabase(applicationContext)
-                            val receiptStoreInterface = ReceiptStoreInterface(db)
-                            receiptStoreInterface.insertOrUpdate(pair)
-
-                            error
+                        val receiptStoreInterface = withContext(Dispatchers.IO) {
+                            val db = AppDatabase.getDatabase(context)
+                            ReceiptStoreInterface(db)
                         }
 
-                        val errorMessage = if(error is SimpleReceipt.FetchInvalidCertificate) {
-                            res.getString(R.string.ssl_exception, error.message)
-                        } else if(error != null) {
-                            res.getString(R.string.unknown_failure, error.message)
-                        } else null
+                        val (receiptCode, error) = extractor.processAndInsertReceipt(
+                            activity,
+                            receiptStoreInterface,
+                            receipt.id
+                        )
 
-                        val message = when(error == null) {
-                            true  -> res.getString(R.string.receipt_options_try_fetching_success)
-                            false -> res.getString(R.string.receipt_fetch_failure,
-                                errorMessage)
-                        }
+                        val humanError = TaxCore.ReceiptExtractor.receiptStatusToMessage(
+                            activity,
+                            receiptCode,
+                            error,
+                            true
+                        )
 
                         Toast.makeText(
                             applicationContext,
-                            message,
+                            humanError,
                             Toast.LENGTH_LONG
                         ).show()
 
-                        extractor.close()
+                        alert.close()
                     }
                 }
             }
@@ -261,11 +254,11 @@ class ReceiptOverviewActivity : AppCompatActivity() {
                 val receipt = receiptDAO.read(receiptID)
                 val store = storeDAO.read(receipt.storeID)
                 receiptDAO.update(receipt.copy(
-                    note = if (receiptText.isEmpty()) null else receiptText
+                    note = receiptText.ifEmpty { null }
                 ))
                 storeDAO.update(store.copy(
-                    usersName = if(storeNameText.isEmpty()) null else storeNameText,
-                    note = if (storeText.isEmpty()) null else storeText
+                    usersName = storeNameText.ifEmpty { null },
+                    note = storeText.ifEmpty { null }
                 ))
             }
         }

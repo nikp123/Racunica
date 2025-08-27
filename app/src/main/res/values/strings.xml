@@ -5,8 +5,10 @@
     <string name="receipts">Receipts</string>
     <string name="scanner">Scan</string>
     <string name="statistics">Statistics</string>
+    <string name="settings">Settings</string>
 
-    <string name="scanner_taxcore_receipt_added">Added \'%1$s-%2$s-%3$d\'</string>
+    <string name="receipt_added">Added \'%1$s\'</string>
+    <string name="receipt_updated">Updated \'%1$s\'</string>
 
     <string name="receipt_overview">%1$s</string>
 
@@ -52,7 +54,6 @@
     <string name="store_rename">Type in the new business name</string>
 
     <string name="receipt_exists">This receipt already exists!</string>
-    <string name="receipt_options_try_fetching_success">Successfully got full receipt!</string>
 
     <string name="country_name_serbia">Serbia</string>
     <string name="country_name_bosnia">Bosnia and Herzegovina</string>
@@ -77,7 +78,6 @@
     </plurals>
     <plurals name="relative_time_months">
         <item quantity="one">%d month ago</item>
-        <item quantity="two"></item>
         <item quantity="other">%d months ago</item>
     </plurals>
     <plurals name="relative_time_years">
@@ -89,4 +89,16 @@
     <string name="ssl_exception">SSL failure: $1%s</string>
     <string name="unknown_failure">Unknown reason: $1%s</string>
     <string name="receipt_new_scan">Scan new receipt</string>
+
+    <!-- Settings related options -->
+    <string name="settings_import">Import receipts from file</string>
+    <string name="settings_export">Export receipts from file</string>
+    <string name="settings_try_fetching">Try obtaining full receipts</string>
+    <string name="settings_force_rebuild">Force rebuild of all data</string>
+    <string name="processing">Processing…</string>
+    <string name="failed_items">Failed items (%1$d)</string>
+    <string name="close">Close</string>
+    <string name="finished">Finished</string>
+    <string name="invalid_items">Invalid items (%1$d)</string>
+    <string name="import_report">We\'ve had %1$d successes and %2$d failures with %3$d entries not being recognized as receipts</string>
 </resources>

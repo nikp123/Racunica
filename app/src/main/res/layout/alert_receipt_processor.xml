@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/receipt_extractor_layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:paddingVertical="20dp"
+    android:theme="@style/Theme.Racunica">
+
+    <ProgressBar
+        android:id="@+id/receipt_processor_progress"
+        style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:indeterminate="true"
+        android:paddingHorizontal="20dp"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:paddingHorizontal="20dp"
+        android:id="@+id/receipt_processor_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/processing" />
+
+    <TextView
+        android:id="@+id/failed_items_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:drawableEnd="@drawable/ic_expand_more"
+        android:padding="12dp"
+        android:visibility="gone"
+        tools:ignore="UseCompatTextViewDrawableXml" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/failed_items_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    <TextView
+        android:id="@+id/invalid_items_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:drawableEnd="@drawable/ic_expand_more"
+        android:padding="12dp"
+        android:visibility="gone"
+        tools:ignore="UseCompatTextViewDrawableXml" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/invalid_items_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+        <Button
+            android:visibility="gone"
+            android:id="@+id/close"
+            android:text="@string/close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+</LinearLayout>

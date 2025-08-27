@@ -1,11 +1,9 @@
+package com.github.nikp123.racunica.data
+
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.viewModelScope
-import com.github.nikp123.racunica.data.Receipt
-import com.github.nikp123.racunica.data.ReceiptDAO
-import com.github.nikp123.racunica.data.AppDatabase
-import com.github.nikp123.racunica.data.ReceiptStore
 import kotlinx.coroutines.launch
 
 class ReceiptStoreViewModel(application: Application) : AndroidViewModel(application) {

@@ -3,12 +3,10 @@ package com.github.nikp123.racunica
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Base64
-import android.webkit.WebSettings
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.github.nikp123.racunica.data.AppDatabase
-import com.github.nikp123.racunica.data.Receipt
 import com.github.nikp123.racunica.data.ReceiptStore
 import com.github.nikp123.racunica.databinding.ActivityReceiptFullBinding
 import kotlinx.coroutines.Dispatchers

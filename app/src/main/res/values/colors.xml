@@ -26,4 +26,6 @@
     <color name="colorOnError">@android:color/white</color>
     <color name="colorErrorContainer">#E6ACA9</color>
     <color name="colorOnErrorContainer">#330B09</color>
+    <color name="colorDanger">#F44336</color>
+    <color name="colorOnDanger">@android:color/white</color>
 </resources>

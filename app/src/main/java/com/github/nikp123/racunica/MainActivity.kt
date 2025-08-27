@@ -1,9 +1,6 @@
 package com.github.nikp123.racunica
 
-import android.os.Build
 import android.os.Bundle
-import android.view.View
-import androidx.annotation.RequiresApi
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
@@ -24,25 +21,27 @@ class MainActivity : FragmentActivity() {
         val pager = binding.pager
         val tabLayout = binding.tabLayout
 
-        val adapter = ThingAdapter(this)
+        val adapter = MainAdapter(this)
         pager.adapter = adapter
 
         TabLayoutMediator(tabLayout, pager) { tab, position ->
             tab.text = when(position) {
                 0 -> getString(R.string.receipts)
-                1 -> getString(R.string.statistics)
+                1 -> getString(R.string.settings)
+                2 -> getString(R.string.statistics)
                 else -> "This should not be here"
             }
         }.attach()
     }
 }
-class ThingAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
-    override fun getItemCount(): Int = 1
+class MainAdapter(fa: FragmentActivity) : FragmentStateAdapter(fa) {
+    override fun getItemCount(): Int = 2
 
     override fun createFragment(position: Int): Fragment {
         return when(position) {
             0 -> return ReceiptsFragment()
-            1 -> return StatisticsFragment()
+            1 -> return SettingsFragment()
+            2 -> return StatisticsFragment()
             else -> ReceiptsFragment()
         }
     }

@@ -410,9 +410,9 @@
                 android:id="@+id/receipt_options_delete"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#F44336"
+                android:backgroundTint="@color/colorDanger"
                 android:text="@string/receipt_options_delete"
-                android:textColor="@color/white" />
+                android:textColor="@color/colorOnDanger" />
 
         </LinearLayout>
     </ScrollView>

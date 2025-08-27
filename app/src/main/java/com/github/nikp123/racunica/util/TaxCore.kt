@@ -1,14 +1,11 @@
 package com.github.nikp123.racunica.util
 
 import android.app.Activity
-import android.app.AlertDialog
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import ch.qos.logback.core.net.ssl.SSL
 import com.github.nikp123.racunica.R
 import com.github.nikp123.racunica.data.Receipt
 import com.github.nikp123.racunica.data.ReceiptStatus
 import com.github.nikp123.racunica.data.ReceiptStore
+import com.github.nikp123.racunica.data.ReceiptStoreInterface
 import com.github.nikp123.racunica.data.Store
 import com.github.nikp123.racunica.data.StoreStatus
 import it.skrape.core.htmlDocument
@@ -18,8 +15,12 @@ import it.skrape.fetcher.response
 import it.skrape.fetcher.skrape
 import it.skrape.selects.html5.pre
 import it.skrape.selects.html5.span
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.net.URI
+import java.net.URISyntaxException
 import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Locale
 import javax.net.ssl.SSLHandshakeException
@@ -82,7 +83,7 @@ class TaxCore {
                     return entries.first { it.code == num }
                 }
             }
-        };
+        }
 
         val requestedBy: String
         val signedBy: String
@@ -254,7 +255,7 @@ class TaxCore {
                                                 }
                                         }
                                     }
-                                }[0].toString()
+                                }[0]
                                     .replace(
                                         "font-family:monospace",
                                         "font-family:monospace; width: fit-content; margin: 0 auto; text-align: center;"
@@ -353,51 +354,78 @@ class TaxCore {
     }
 
     // Warning: You HAVE to call close() on this, otherwise the spinner will not disappear!
+    // The idea was to migrate this to a separate class that will act as a factory for all
+    // other bill types that are incompatible with each-other
     class ReceiptExtractor {
         enum class Country {
             RS,        // Serbia
             BA;        // Bosnia
         }
 
-        class InvalidURLException(message: String) : Exception(message)
-
-        private var activity: Activity
-        private var dialog: AlertDialog
+        class InvalidURIHost(message: String) : Exception(message)
+        class NotAnURI(message: String?) : Exception(message)
+        class EntryAlreadyExists() : Exception()
 
         private var uri: URI
 
-        constructor(activity: Activity, uri: URI) {
-            this.activity = activity
+        constructor(data: ByteArray) {
+            try {
+                uri = URI.create(String(data, StandardCharsets.UTF_8))
 
-            val builder: AlertDialog.Builder = AlertDialog.Builder(activity)
-            val inflater: LayoutInflater = activity.layoutInflater
-
-            val view = inflater.inflate(R.layout.popup_receipt_extractor, null, false)
-
-            builder.setView(view)
-            builder.setCancelable(false)
-
-            dialog = builder.create()
-
-            // The idea is if we have multiple Tax systems that we are able to determine which
-            // one we pick from here
-            val country = when (uri.host) {
-                "suf.purs.gov.rs"         -> Country.RS
-                "suf.poreskaupravars.org" -> Country.BA
-                else -> throw InvalidURLException("No known tax authority matches")
+                // The idea is if we have multiple Tax systems that we are able to determine which
+                // one we pick from here
+                val country = when (uri.host) {
+                    "suf.purs.gov.rs" -> Country.RS
+                    "suf.poreskaupravars.org" -> Country.BA
+                    else -> throw InvalidURIHost("No known tax authority matches")
+                }
+            } catch(e: InvalidURIHost) {
+                throw e
+            } catch(e: URISyntaxException) {
+                // Here you should handle potentially other QR types, such as the Austrian one
+                throw NotAnURI(e.message)
             }
-
-            this.uri = uri
-
-            dialog.show()
         }
 
-        fun getSimple(): SimpleReceipt {
-            return SimpleReceipt(uri)
+        // @return - Returns a pair of humanly readable receipt code and any potential error
+        suspend fun processAndInsertReceipt(
+            activity: Activity,
+            receiptStoreInterface: ReceiptStoreInterface,
+            existingReceiptID: Long? = null
+        ): Pair<String?, Throwable?> {
+            // Here we should branch out to provider specific implementations when they arrive
+            val simple = SimpleReceipt(uri)
+
+            // Access the database globally
+            return withContext(Dispatchers.IO) {
+                var (pair, error) = simple.fetchReceiptAndStore(activity, existingReceiptID)
+                if(receiptStoreInterface.insertOrUpdate(pair) == -1L) {
+                    error = EntryAlreadyExists()
+                }
+
+                // Update to non TaxCore specific way once you get to it
+                val humanName = pair.store.code + '-' + pair.receipt.code
+
+                Pair(humanName, error)
+            }
         }
 
-        fun close() {
-            dialog.hide()
+        companion object {
+            // The idea with this is that we're able to turn machine errors to something
+            // we can display to users
+            // This is a sort-of error dictionary I guess
+            fun receiptStatusToMessage(activity: Activity, code: String?, error: Throwable?, isUpdate: Boolean): String {
+                val res = activity.resources
+
+                return when (error) {
+                    null -> if(isUpdate)
+                        res.getString(R.string.receipt_updated, code)
+                    else res.getString(R.string.receipt_added, code)
+                    is EntryAlreadyExists -> res.getString(R.string.receipt_exists)
+                    is SimpleReceipt.FetchInvalidCertificate -> res.getString(R.string.ssl_exception, error.message)
+                    else -> res.getString(R.string.unknown_failure, error.message)
+                }
+            }
         }
     }
 }

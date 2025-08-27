@@ -20,10 +20,4 @@
 
     <color name="colorSurface">#1F2423</color>
     <color name="colorOnSurface">#E0E3E1</color>
-
-    <!-- Theme universal -->
-    <color name="colorError">#B3261E</color>
-    <color name="colorOnError">@android:color/white</color>
-    <color name="colorErrorContainer">#E6ACA9</color>
-    <color name="colorOnErrorContainer">#330B09</color>
 </resources>

@@ -1,7 +1,6 @@
 package com.github.nikp123.racunica.util
 
 import java.net.URI
-import java.net.URISyntaxException
 
 class URIUtils {
     private val uri: URI?
@@ -13,7 +12,7 @@ class URIUtils {
     fun parseQuery(): MutableMap<String?, String?> {
         val query = uri?.query
 
-        val queryParams: MutableMap<String?, String?> = HashMap<String?, String?>()
+        val queryParams: MutableMap<String?, String?> = HashMap()
         if (query != null) {
             val pairs = query.split("&".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
             for (pair in pairs) {

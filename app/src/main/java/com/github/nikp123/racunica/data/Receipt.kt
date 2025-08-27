@@ -1,11 +1,9 @@
 package com.github.nikp123.racunica.data
 
 import androidx.room.ColumnInfo
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import androidx.room.Relation
 import com.github.nikp123.racunica.util.TaxCore
 
 enum class ReceiptStatus {
