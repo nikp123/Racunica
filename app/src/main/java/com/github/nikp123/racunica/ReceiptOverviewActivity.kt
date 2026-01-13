@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.lifecycle.lifecycleScope
@@ -29,6 +30,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import java.util.TimeZone
+
 
 class ReceiptOverviewActivity : AppCompatActivity() {
 
@@ -187,26 +189,33 @@ class ReceiptOverviewActivity : AppCompatActivity() {
 
         val deleteButton = view.findViewById<Button>(R.id.receipt_options_delete)
         deleteButton.setOnClickListener {
-            lifecycleScope.launch {
-                // Stop the UI from being updated because clearing the record
-                // while the thread is listening for it WILL cause a crash
-                uiUpdaterThread.cancel()
-                isBeingActivelyDestroyed = true
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.receipt_deletion_confirmation_title))
+                .setMessage(getString(R.string.receipt_deletion_confirmation_text))
+                .setIcon(R.drawable.ic_baseline_warning)
+                .setPositiveButton(android.R.string.yes) { dialog, whichButton ->
+                    lifecycleScope.launch {
+                        // Stop the UI from being updated because clearing the record
+                        // while the thread is listening for it WILL cause a crash
+                        uiUpdaterThread.cancel()
+                        isBeingActivelyDestroyed = true
 
-                val db = AppDatabase.getDatabase(applicationContext)
-                val receiptDAO = db.receiptDAO()
-                val storeDAO = db.storeDAO()
+                        val db = AppDatabase.getDatabase(applicationContext)
+                        val receiptDAO = db.receiptDAO()
+                        val storeDAO = db.storeDAO()
 
-                // Do updates on a separate thread to prevent UI lockups
-                withContext(Dispatchers.IO) {
-                    receiptDAO.delete(receipt)
-                    if(receiptDAO.getStoreReferenceCount(store.id) == 0L)
-                        storeDAO.delete(store)
+                        // Do updates on a separate thread to prevent UI lockups
+                        withContext(Dispatchers.IO) {
+                            receiptDAO.delete(receipt)
+                            if (receiptDAO.getStoreReferenceCount(store.id) == 0L)
+                                storeDAO.delete(store)
+                        }
+
+                        // The bill was invalidated, therefore we must exit
+                        finish()
+                    }
                 }
-
-                // The bill was invalidated, therefore we must exit
-                finish()
-            }
+                .setNegativeButton(android.R.string.no, null).show()
         }
     }
 

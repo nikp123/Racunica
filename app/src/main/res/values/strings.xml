@@ -101,4 +101,6 @@
     <string name="finished">Finished</string>
     <string name="invalid_items">Invalid items (%1$d)</string>
     <string name="import_report">We\'ve had %1$d successes and %2$d failures with %3$d entries not being recognized as receipts</string>
+    <string name="receipt_deletion_confirmation_text">Do you really want to delete this receipt?</string>
+    <string name="receipt_deletion_confirmation_title">Confirm deletion</string>
 </resources>
