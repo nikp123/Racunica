@@ -2,7 +2,6 @@
     <style name="Base.Theme.Racunica" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="elevationOverlayEnabled">true</item>
         <item name="elevationOverlayColor">@color/colorPrimary</item>
-        <item name="android:statusBarColor">@color/colorBackground</item>
 
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorOnPrimary">@color/colorOnPrimary</item>
