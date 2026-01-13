@@ -193,7 +193,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
                 .setTitle(getString(R.string.receipt_deletion_confirmation_title))
                 .setMessage(getString(R.string.receipt_deletion_confirmation_text))
                 .setIcon(R.drawable.ic_baseline_warning)
-                .setPositiveButton(android.R.string.yes) { dialog, whichButton ->
+                .setPositiveButton(android.R.string.ok) { _, _ ->
                     lifecycleScope.launch {
                         // Stop the UI from being updated because clearing the record
                         // while the thread is listening for it WILL cause a crash
@@ -215,7 +215,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
                         finish()
                     }
                 }
-                .setNegativeButton(android.R.string.no, null).show()
+                .setNegativeButton(android.R.string.cancel, null).show()
         }
     }
 

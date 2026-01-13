@@ -4,9 +4,11 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
+import android.os.Build
 import android.os.Bundle
 import android.util.Base64
 import android.view.View
+import android.view.WindowInsetsController
 import android.webkit.WebView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -37,14 +39,23 @@ class ReceiptFullActivity : AppCompatActivity() {
     }
 
     private fun setStatusBarLightIcons(activity: Activity, lightIcons: Boolean) {
-        val decor = activity.window.decorView
-        var flags = decor.systemUiVisibility
-        flags = if (lightIcons) {
-            flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()   // dark background → light icons
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            val appearance = if (lightIcons) 0 else WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS
+            window.insetsController?.setSystemBarsAppearance(
+                appearance,
+                WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS,
+
+            )
         } else {
-            flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR          // light background → dark icons
+            val decor = activity.window.decorView
+            var flags = decor.systemUiVisibility
+            flags = if (lightIcons) {
+                flags and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()   // dark background → light icons
+            } else {
+                flags or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR          // light background → dark icons
+            }
+            decor.systemUiVisibility = flags
         }
-        decor.systemUiVisibility = flags
     }
 
     private fun renderUI(pair: ReceiptStore) {
@@ -68,7 +79,7 @@ class ReceiptFullActivity : AppCompatActivity() {
         webView.loadData(String(siteEncoded), "text/html", "base64")
 
         val appBar = view.findViewById<AppBarLayout>(R.id.appbar)
-        appBar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener { _, offset ->
+        appBar.addOnOffsetChangedListener { _, offset ->
             // total scroll range is negative; offset goes from 0 (expanded) to -total (collapsed)
             val total = appBar.totalScrollRange
             val collapseFraction = -offset / total.toFloat()   // 0..1
@@ -77,10 +88,13 @@ class ReceiptFullActivity : AppCompatActivity() {
             val shouldUseLightIcons = collapseFraction > 0.5f
 
             if (shouldUseLightIcons != statusBarIsLight && !view.context.isUsingLightTheme()) {
-                setStatusBarLightIcons(this, !shouldUseLightIcons) // invert because flag = dark icons
+                setStatusBarLightIcons(
+                    this,
+                    !shouldUseLightIcons
+                ) // invert because flag = dark icons
                 statusBarIsLight = shouldUseLightIcons
             }
-        })
+        }
 
     }
 
