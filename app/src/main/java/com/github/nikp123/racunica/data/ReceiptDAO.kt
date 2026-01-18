@@ -22,6 +22,9 @@ interface ReceiptDAO {
     @Query("SELECT * FROM receipts ORDER BY time DESC")
     fun readAllData(): LiveData<List<Receipt>>
 
+    @Query("SELECT * FROM receipts")
+    fun readAllDataBlocking(): List<Receipt>
+
     @Query("SELECT * FROM receipts WHERE id = :id")
     fun observe(id: Long): Flow<Receipt>
 

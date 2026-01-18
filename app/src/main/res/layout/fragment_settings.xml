@@ -27,7 +27,6 @@
                 android:text="@string/settings_import" />
 
             <Button
-                android:visibility="gone"
                 android:id="@+id/settings_export"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

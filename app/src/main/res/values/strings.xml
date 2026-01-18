@@ -92,7 +92,7 @@
 
     <!-- Settings related options -->
     <string name="settings_import">Import receipts from file</string>
-    <string name="settings_export">Export receipts from file</string>
+    <string name="settings_export">Export receipts to file</string>
     <string name="settings_try_fetching">Try obtaining full receipts</string>
     <string name="settings_force_rebuild">Force rebuild of all data</string>
     <string name="processing">Processing…</string>
