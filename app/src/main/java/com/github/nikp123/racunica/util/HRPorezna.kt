@@ -1,36 +1,14 @@
 package com.github.nikp123.racunica.util
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import com.github.nikp123.racunica.data.Receipt
 import com.github.nikp123.racunica.data.ReceiptStatus
-import com.github.nikp123.racunica.data.ReceiptStore
-import com.github.nikp123.racunica.data.Store
-import com.github.nikp123.racunica.data.StoreStatus
 import com.github.nikp123.racunica.util.ReceiptExtractor.TransactionType
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.adapter
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import it.skrape.fetcher.BlockingFetcher
-import it.skrape.fetcher.Request
-import okhttp3.Headers
-import okhttp3.OkHttpClient
 import java.net.URI
-import java.nio.charset.Charset
-import java.security.MessageDigest
 import java.text.SimpleDateFormat
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import java.util.TimeZone
-import javax.net.ssl.SSLHandshakeException
 import kotlin.String
-import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import kotlin.Result
-
 @Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class HRPorezna {
     class SimpleReceipt {
@@ -87,7 +65,7 @@ class HRPorezna {
                 // but the correct UNIX timestamp should be Long
                 timestamp = run {
                     val formatter = SimpleDateFormat("yyyyMMdd_HHmm")
-                    formatter.timeZone = TimeZone.getTimeZone("UTC")
+                    formatter.timeZone = TimeZone.getTimeZone("Europe/Zagreb")
                     formatter.parse(datv!!).time
                 }
 

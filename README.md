@@ -17,9 +17,10 @@ This app plans to add many more features, but for now only the core functionalit
 ## What bills are supported?
 
 Bills that are issues from the following territories are supported:
- - Bosnia & Herzegovina (apparently only Republika Srpska? This needs to get confirmed)
- - Croatia
- - Serbia
+ - Austria (RKSV)
+ - Bosnia & Herzegovina (TaxCore) (apparently only Republika Srpska? This needs to get confirmed)
+ - Croatia (some other weird thing)
+ - Serbia (TaxCore)
 
 I have plans to add many other countries because I'm trying to build the app in a way that would allow you to process data from many other sources.
 

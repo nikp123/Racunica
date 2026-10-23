@@ -105,4 +105,5 @@
     <string name="receipt_deletion_confirmation_title">Confirm deletion</string>
     <string name="country_name_croatia">Croatia</string>
     <string name="receipt_store_unknown">Unknown store</string>
+    <string name="country_name_austria">Austria</string>
 </resources>

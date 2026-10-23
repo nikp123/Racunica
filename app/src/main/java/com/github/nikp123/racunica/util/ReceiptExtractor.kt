@@ -18,14 +18,15 @@ class ReceiptExtractor {
     enum class Country {
         RS,        // Serbia
         BA,        // Bosnia
-        HR;        // Croatia
-        //AT,        // Austria
+        HR,        // Croatia
+        AT;        // Austria
 
         fun toID(): Int {
             return when(this) {
                 BA -> R.string.country_name_bosnia
                 RS -> R.string.country_name_serbia
                 HR -> R.string.country_name_croatia
+                AT -> R.string.country_name_austria
             }
         }
     }
@@ -61,16 +62,29 @@ class ReceiptExtractor {
     class NotAnURI(message: String?) : Exception(message)
     class EntryAlreadyExists() : Exception()
 
-    private var uri: URI
+    // Receipts can either contain URLs to Tax Authority websites or plain data,
+    // we need to distinguish between each and handle them accordingly
+    private var uri: URI?
+    private var data: ByteArray
     private var country: Country
 
     constructor(data: ByteArray) {
-        try {
+        this.data = data
+        this.uri = null
+
+        // Try the special formats first then test for URIs
+        val string = String(data, StandardCharsets.UTF_8)
+        val parts = string.split("_")
+
+        if(parts.size == 14 && parts[1].take(5) == "R1-AT") {
+            // Almost certainly an Austrian receipt
+            country = Country.AT
+        } else try {
             uri = URI.create(String(data, StandardCharsets.UTF_8))
 
             // The idea is if we have multiple Tax systems that we are able to determine which
             // one we pick from here
-            country = when (uri.host) {
+            country = when (uri!!.host) {
                 "suf.purs.gov.rs" -> Country.RS
                 "suf.poreskaupravars.org" -> Country.BA
                 "porezna.gov.hr" -> Country.HR
@@ -79,7 +93,6 @@ class ReceiptExtractor {
         } catch(e: InvalidURIHost) {
             throw e
         } catch(e: URISyntaxException) {
-            // Here you should handle potentially other QR types, such as the Austrian one
             throw NotAnURI(e.message)
         }
     }
@@ -92,7 +105,7 @@ class ReceiptExtractor {
     ): Pair<String?, Throwable?> {
         return when(this@ReceiptExtractor.country) {
             Country.RS, Country.BA -> {
-                val simple = TaxCore.SimpleReceipt(uri)
+                val simple = TaxCore.SimpleReceipt(uri!!)
 
                 // Access the database globally
                 withContext(Dispatchers.IO) {
@@ -108,7 +121,7 @@ class ReceiptExtractor {
                 }
             }
             Country.HR -> {
-                val simple = HRPorezna.SimpleReceipt(uri)
+                val simple = HRPorezna.SimpleReceipt(uri!!)
 
                 withContext(Dispatchers.IO) {
                     val humanName = simple.receiptID
@@ -116,6 +129,24 @@ class ReceiptExtractor {
                     if(receiptStoreInterface.insertOrUpdateReceipt(simple.getReceipt()) == -1L) {
                         error = EntryAlreadyExists()
                     }
+                    Pair(humanName, error)
+                }
+            }
+            Country.AT -> {
+                val simple = RKSV.SimpleReceipt(data)
+
+                // Access the database globally
+                withContext(Dispatchers.IO) {
+                    val pair = simple.get()
+                    var error: Throwable? = null
+
+                    if(receiptStoreInterface.insertOrUpdate(pair) == -1L) {
+                        error = EntryAlreadyExists()
+                    }
+
+                    // Update to non TaxCore specific way once you get to it
+                    val humanName = pair.store!!.code + '-' + pair.receipt.code
+
                     Pair(humanName, error)
                 }
             }
