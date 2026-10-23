@@ -10,9 +10,9 @@ import android.content.Context
 import android.content.Intent
 import androidx.recyclerview.widget.RecyclerView
 import com.github.nikp123.racunica.R
-import com.github.nikp123.racunica.util.TaxCore.SimpleReceipt
 import com.github.nikp123.racunica.util.unixTimeToRelativeTime
 import com.github.nikp123.racunica.ReceiptOverviewActivity
+import com.github.nikp123.racunica.util.ReceiptExtractor
 
 class ReceiptAdapter(private var receiptStores: List<ReceiptStore> = emptyList()) :
     RecyclerView.Adapter<ReceiptAdapter.ListViewHolder>() {
@@ -47,18 +47,19 @@ class ReceiptAdapter(private var receiptStores: List<ReceiptStore> = emptyList()
         holder.unit.text = receipt.unit.toString() // Assuming we are only dealing with Serbia
         holder.time.text =
             unixTimeToRelativeTime(receipt.time, context)
-        holder.amount.text = String.format("%.2f", SimpleReceipt.getHumanAmount(receipt.amount,
+        holder.amount.text = String.format("%.2f", ReceiptExtractor.getHumanAmount(receipt.amount,
             receipt.unit))
         holder.name.text        = store.usersName ?: (store.name ?: store.code)
         holder.receiptCode.text = holder.receiptCode.resources.getString(R.string.receipt_code_short) + receipt.code
         holder.type.setBackgroundResource(when(receipt.type) {
-            SimpleReceipt.TransactionType.SALE   -> R.drawable.ic_receipt_foreground
-            SimpleReceipt.TransactionType.REFUND -> R.drawable.ic_money_foreground
+            ReceiptExtractor.TransactionType.SALE   -> R.drawable.ic_receipt_foreground
+            ReceiptExtractor.TransactionType.REFUND -> R.drawable.ic_money_foreground
         })
         // Help blind users navigate the list.
         // Though, admittedly I have no idea how to do this properly :(
         if(holder.name.text != null)
             holder.type.contentDescription = holder.name.text
+
         holder.receiptNote.visibility = when(receipt.note != null) {
             true -> View.VISIBLE; false -> View.GONE
         }

@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.github.nikp123.racunica.util.TaxCore
+import com.github.nikp123.racunica.util.ReceiptExtractor
 
 enum class StoreStatus {
     OFFLINE, ONLINE_FAILURE, ONLINE
@@ -32,7 +32,7 @@ data class Store (
     val usersName: String?,
 
     // Location
-    val country:        TaxCore.ReceiptExtractor.Country,
+    val country:        ReceiptExtractor.Country,
     val municipality:   String?,
     val city:           String?,
     val address:        String?,

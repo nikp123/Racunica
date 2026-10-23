@@ -16,9 +16,7 @@ import com.github.nikp123.racunica.data.ReceiptStatus
 import com.github.nikp123.racunica.data.ReceiptStore
 import com.github.nikp123.racunica.data.ReceiptStoreInterface
 import com.github.nikp123.racunica.databinding.ActivityReceiptOverviewBinding
-import com.github.nikp123.racunica.util.CountryToIDString
-import com.github.nikp123.racunica.util.TaxCore
-import com.github.nikp123.racunica.util.TaxCore.SimpleReceipt
+import com.github.nikp123.racunica.util.ReceiptExtractor
 import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -63,7 +61,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
         receiptNote.setText(receipt.note)
         view.findViewById<TextView>(R.id.receipt_details_amount).text = String.format(
             "%.02f %s",
-            SimpleReceipt.getHumanAmount(receipt.amount, receipt.unit),
+            ReceiptExtractor.getHumanAmount(receipt.amount, receipt.unit),
             receipt.unit.toString()
         )
         val date = Date(receipt.time)
@@ -71,8 +69,8 @@ class ReceiptOverviewActivity : AppCompatActivity() {
         dateFormat.timeZone = TimeZone.getDefault()
         view.findViewById<TextView>(R.id.receipt_details_time).text = dateFormat.format(date)
         view.findViewById<TextView>(R.id.receipt_details_type).setText(when(receipt.type) {
-            SimpleReceipt.TransactionType.SALE ->    R.string.receipt_details_type_sale
-            SimpleReceipt.TransactionType.REFUND ->  R.string.receipt_details_type_refund
+            ReceiptExtractor.TransactionType.SALE ->    R.string.receipt_details_type_sale
+            ReceiptExtractor.TransactionType.REFUND ->  R.string.receipt_details_type_refund
         })
         view.findViewById<TextView>(R.id.receipt_details_details).setText(when(receipt.status) {
             ReceiptStatus.OFFLINE -> R.string.receipt_details_details_low
@@ -81,7 +79,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
         })
         view.findViewById<TextView>(R.id.receipt_details_id).text = receipt.code
         view.findViewById<TextView>(R.id.receipt_details_country).text =
-            resources.getString(CountryToIDString(receipt.country))
+            resources.getString(receipt.country.toID())
         if(receipt.purchaserCode != null)
             view.findViewById<TextView>(R.id.receipt_details_purchaser_id).text = receipt.purchaserCode
 
@@ -110,7 +108,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
             ReceiptStatus.OFFLINE, ReceiptStatus.ONLINE_FAILURE -> {
                 fetchOrOpenReceipt.setOnClickListener {
                     val alert = ReceiptProcessorAlert(this)
-                    val extractor = TaxCore.ReceiptExtractor(receipt.url.toByteArray())
+                    val extractor = ReceiptExtractor(receipt.url.toByteArray())
                     val activity = this
                     val context = this.applicationContext
 
@@ -127,7 +125,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
                             receipt.id
                         )
 
-                        val humanError = TaxCore.ReceiptExtractor.receiptStatusToMessage(
+                        val humanError = ReceiptExtractor.receiptStatusToMessage(
                             activity,
                             receiptCode,
                             error,
@@ -169,7 +167,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
                     if(store.municipality != null)
                         address += ", " + store.municipality
 
-                    address += ", " + resources.getString(CountryToIDString(store.country))
+                    address += ", " + resources.getString(store.country.toID())
 
                     val locationString = "geo:0,0?q=" + URLEncoder.encode(address, "UTF-8")
 

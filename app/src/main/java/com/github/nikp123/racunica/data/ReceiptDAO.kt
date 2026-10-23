@@ -8,7 +8,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.github.nikp123.racunica.util.TaxCore.ReceiptExtractor
+import com.github.nikp123.racunica.util.ReceiptExtractor
 import kotlinx.coroutines.flow.Flow
 
 @Dao

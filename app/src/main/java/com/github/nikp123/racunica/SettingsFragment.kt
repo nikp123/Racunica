@@ -29,6 +29,7 @@ import kotlinx.coroutines.withContext
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.atomic.AtomicInteger
+import com.github.nikp123.racunica.util.ReceiptExtractor
 
 class SettingsFragment : Fragment() {
     private var filePickerLauncher: ActivityResultLauncher<Intent?>? = null
@@ -71,12 +72,12 @@ class SettingsFragment : Fragment() {
         // Unused, but can be indicated to the user that something is wrong with their backup
         val invalidEntries: ArrayList<ByteArray> = ArrayList()
 
-        val list: List<Pair<TaxCore.ReceiptExtractor, ByteArray>> = when(mimetype) {
+        val list: List<Pair<ReceiptExtractor, ByteArray>> = when(mimetype) {
             "text/plain" -> readPlainTextLineByLine(uri)
                 .mapNotNull {
                     try {
                         Pair(
-                            TaxCore.ReceiptExtractor(it.toByteArray(Charsets.UTF_8)),
+                            ReceiptExtractor(it.toByteArray(Charsets.UTF_8)),
                             it.toByteArray(Charsets.UTF_8)
                         )
                     } catch(e: Exception) {
@@ -109,7 +110,7 @@ class SettingsFragment : Fragment() {
                     receiptStoreInterface
                 )
 
-                val humanError = TaxCore.ReceiptExtractor.receiptStatusToMessage(
+                val humanError = ReceiptExtractor.receiptStatusToMessage(
                     requireActivity(),
                     receiptCode,
                     error,

@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.github.nikp123.racunica.data.AppDatabase
 import com.github.nikp123.racunica.data.ReceiptAdapter
 import com.github.nikp123.racunica.data.ReceiptStoreInterface
-import com.github.nikp123.racunica.util.TaxCore
+import com.github.nikp123.racunica.util.ReceiptExtractor
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import io.github.g00fy2.quickie.QRResult
 import io.github.g00fy2.quickie.ScanCustomCode
@@ -49,7 +49,7 @@ class ReceiptsFragment : Fragment() {
         val alert = ReceiptProcessorAlert(activity)
 
         val extractor = try {
-            TaxCore.ReceiptExtractor(data)
+            ReceiptExtractor(data)
         } catch(e: Exception) {
             Toast.makeText(activity, "QR code is not a valid receipt", Toast.LENGTH_SHORT).show()
             Log.d("ReceiptsFragment", "QR decode failed due to: " + e.message.orEmpty())
@@ -69,7 +69,7 @@ class ReceiptsFragment : Fragment() {
                 receiptStoreInterface,
             )
 
-            val humanError = TaxCore.ReceiptExtractor.receiptStatusToMessage(
+            val humanError = ReceiptExtractor.receiptStatusToMessage(
                 activity,
                 receiptCode,
                 error,

@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import qrcode.QRCode
 
 class ReceiptFullActivity : AppCompatActivity() {
 
@@ -69,7 +70,22 @@ class ReceiptFullActivity : AppCompatActivity() {
 
         // Receipt details
         val webView = view.findViewById<WebView>(R.id.receipt_full_content)
-        val siteUnencoded = receipt.text ?: "Text content is missing, this is a bug!"
+        var siteUnencoded = receipt.text ?: "Text content is missing, this is a bug!"
+
+        // Render stored URL as a new QR code
+        val qrCodeRaw = QRCode.ofSquares()
+            .withMargin(0)
+            .withInnerSpacing(0)
+            .build(receipt.url)
+            .render()
+            .getBytes()
+        val qrCodeEncoded = Base64.encodeToString(qrCodeRaw, Base64.NO_PADDING)
+
+        // Properly render the HTML content of the WebView while also including the generated QR code
+        val imageTag = "\n<img src=\"data:image/png;base64," + qrCodeEncoded + "\" width=\"300\" height=\"300\">\n";
+        siteUnencoded =
+            "<pre style=\"font-family:monospace; width: fit-content; margin: 0 auto; text-align: center;\">\n" +
+            siteUnencoded + imageTag + "\n</pre>";
 
         // We need to do this conversion bullshit because
         // for some reason if you parse a raw UTF-8 '#' (Pound sign)

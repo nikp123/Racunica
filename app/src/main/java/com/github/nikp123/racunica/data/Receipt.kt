@@ -4,7 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import com.github.nikp123.racunica.util.TaxCore
+import com.github.nikp123.racunica.util.ReceiptExtractor
 
 enum class ReceiptStatus {
     OFFLINE, ONLINE_FAILURE, ONLINE
@@ -23,10 +23,10 @@ data class Receipt (
     val amount:     Long,
 
     // Type of currency
-    val unit:       TaxCore.SimpleReceipt.MonetaryUnit,
+    val unit:       ReceiptExtractor.MonetaryUnit,
 
     // Country of origin
-    val country:    TaxCore.ReceiptExtractor.Country,
+    val country:    ReceiptExtractor.Country,
 
     // UNIX timestamp
     val time:       Long,
@@ -44,7 +44,7 @@ data class Receipt (
     val status:     ReceiptStatus,
 
     // Track the type of the receipt
-    val type:       TaxCore.SimpleReceipt.TransactionType,
+    val type:       ReceiptExtractor.TransactionType,
 
     // Text of the entire receipt
     @ColumnInfo(typeAffinity = ColumnInfo.TEXT)

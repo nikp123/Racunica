@@ -50,6 +50,13 @@ android {
         viewBinding = true
     }
 
+    testOptions {
+        unitTests {
+            // This stops the "not mocked" RuntimeException instantly
+            isReturnDefaultValues = true
+        }
+    }
+
     configurations.matching { cfg ->
         cfg.name in listOf(
             "implementation",
@@ -88,8 +95,14 @@ dependencies {
     implementation(libs.material)                   // REQUIRED for Material You colors
     implementation(libs.okhttp)                     // HTTP lib that still works with Lollipop
     implementation(libs.skrapeit)                   // Our scraping library
-    implementation(libs.quickie.bundled)            // QR code magic
+    implementation(libs.qrcode.kotlin)              // QR code generator
+    implementation(libs.quickie.bundled)            // QR code scanner
     testImplementation(libs.junit)
+
+    // Core Moshi Library (for parsing JSON)
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
+    ksp(libs.moshi.kotlin.codegen)
 
     // Room library (abstraction over SQLite)
     implementation(libs.room.runtime)

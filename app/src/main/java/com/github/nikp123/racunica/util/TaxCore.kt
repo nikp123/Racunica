@@ -1,35 +1,29 @@
 package com.github.nikp123.racunica.util
 
 import android.app.Activity
-import com.github.nikp123.racunica.R
 import com.github.nikp123.racunica.data.Receipt
 import com.github.nikp123.racunica.data.ReceiptStatus
 import com.github.nikp123.racunica.data.ReceiptStore
-import com.github.nikp123.racunica.data.ReceiptStoreInterface
 import com.github.nikp123.racunica.data.Store
 import com.github.nikp123.racunica.data.StoreStatus
-import it.skrape.core.htmlDocument
+import com.github.nikp123.racunica.util.ReceiptExtractor.TransactionType
+import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.adapter
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import it.skrape.fetcher.BlockingFetcher
 import it.skrape.fetcher.Request
-import it.skrape.fetcher.response
-import it.skrape.fetcher.skrape
-import it.skrape.selects.html5.pre
-import it.skrape.selects.html5.span
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import okhttp3.Headers
+import okhttp3.OkHttpClient
 import java.net.URI
-import java.net.URISyntaxException
 import java.nio.charset.Charset
-import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.Locale
 import javax.net.ssl.SSLHandshakeException
 import kotlin.String
-import kotlin.collections.map
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-
-
+import kotlin.Result
 
 fun ByteArray.toHexString(): String {
     return joinToString(separator = "") { "%02X".format(it) }
@@ -45,20 +39,10 @@ class TaxCore {
         class UnsupportedCountry() : Exception()
         class FetchInvalidCertificate(message: String?) : Exception(message)
         class FetchGeneralFailure(message: String?) : Exception(message)
+        class FetchParsingError(message: String?) : Exception(message)
 
 
         val TAXCORE_VERSON_NUMBER = 3
-
-        enum class MonetaryUnit {
-            RSD,        // Serbia
-            BAM;        // Bosnia
-
-            companion object {
-                fun fromStringOrThrow(str: String): MonetaryUnit {
-                    return entries.first { it.toString() == str }
-                }
-            }
-        }
 
         enum class InvoiceType(val code: UByte) {
             NORMAL  (0u.toUByte()),
@@ -69,17 +53,6 @@ class TaxCore {
 
             companion object {
                 fun fromNumberOrThrow(num: UByte): InvoiceType {
-                    return entries.first { it.code == num }
-                }
-            }
-        }
-
-        enum class TransactionType(val code: UByte) {
-            SALE    (0u.toUByte()),
-            REFUND  (1u.toUByte());
-
-            companion object {
-                fun fromNumberOrThrow(num: UByte): TransactionType {
                     return entries.first { it.code == num }
                 }
             }
@@ -96,7 +69,7 @@ class TaxCore {
         val totalAmount: Long
         val timestamp: Long                    // 64bit UNIX epoch
         val invoiceType: InvoiceType
-        val transactionType: TransactionType
+        val transactionType: ReceiptExtractor.TransactionType
 
         val buyerID: String?
 
@@ -105,7 +78,7 @@ class TaxCore {
         //val signature: ByteArray
 
         // Custom values I've made for my self
-        val unit:       MonetaryUnit
+        val unit:       ReceiptExtractor.MonetaryUnit
         val uri:        URI
         val country:    ReceiptExtractor.Country
 
@@ -118,8 +91,8 @@ class TaxCore {
             this.uri = uri
 
             unit = when(uri.host) {
-                "suf.purs.gov.rs" -> MonetaryUnit.RSD
-                "suf.poreskaupravars.org" -> MonetaryUnit.BAM
+                "suf.purs.gov.rs" -> ReceiptExtractor.MonetaryUnit.RSD
+                "suf.poreskaupravars.org" -> ReceiptExtractor.MonetaryUnit.BAM
                 else -> {
                     throw UnsupportedMonetaryValue(
                         String.format("Unsupported tax provider (Got '%s')", uri.host)
@@ -202,7 +175,7 @@ class TaxCore {
 
                 invoiceType = InvoiceType.fromNumberOrThrow(data[41].toUByte())
 
-                transactionType = TransactionType.fromNumberOrThrow(data[42].toUByte())
+                transactionType = TransactionType.fromTaxCoreNumberOrThrow(data[42].toUByte())
 
                 buyerID = when(data[43].toInt()) {
                     0 ->  null
@@ -218,65 +191,117 @@ class TaxCore {
             }
         }
 
+
         // @return - Returns the HTML of the receipt itself
         data class FullReceiptScrapeResult(
             val receiptText: String,
             val store: Store,
         )
+
+        /**
+         * There probably should be a prettier way to read a JSON response than this,
+         * but this is my very short term research on how to do this using moshi's
+         * README on GitHub.
+         */
+        class TaxCoreReceiptJsonInvoiceRequestPayment (
+            val paymentType: Int,
+            val amount: Float
+        )
+
+        class TaxCoreReceiptJsonInvoiceRequest (
+            val posTime: String?,
+            val taxId: String,
+            val businessName: String,
+            val locationName: String,
+            val address: String,
+            val city: String,
+            val administrativeUnit: String,
+            val buyer: String?,
+            val buyerCostCenter: String?,
+            val cashier: String,
+            val requestedBy: String,
+            val invoiceType: Int,
+            val transactionType: Int,
+            val payments: List<TaxCoreReceiptJsonInvoiceRequestPayment>
+        )
+
+        class TaxCoreReceiptJsonInvoiceResult (
+            val totalAmount: Float,
+            val transactionTypeCounter: Int,
+            val totalCounter: Int,
+            val invoiceCounterExtension: String,
+            val invoiceNumber: String,
+            val signedBy: String,
+            val sdcTime: String
+        )
+
+        class TaxCoreReceiptJson (
+            val invoiceRequest: TaxCoreReceiptJsonInvoiceRequest,
+            val invoiceResult: TaxCoreReceiptJsonInvoiceResult,
+            val journal: String,
+            val isValid: Boolean
+        )
+
+        @OptIn(ExperimentalStdlibApi::class)
+        internal fun fullScrapeVersion2(): Result<FullReceiptScrapeResult> {
+            val headers = Headers.Builder()
+                .add("Accept", "application/json")
+                .build()
+
+            val request = okhttp3.Request.Builder()
+                .url(uri.toString())
+                .headers(headers)
+                .build()
+
+            val result = try {
+                OkHttpClient().newCall(request).execute()
+            } catch(e: Exception) {
+                return Result.failure(FetchGeneralFailure(e.message))
+            }.body.string()
+
+            val moshi: Moshi = Moshi.Builder()
+                .addLast(KotlinJsonAdapterFactory())
+                .build()
+
+            val jsonAdapter: JsonAdapter<TaxCoreReceiptJson> = moshi.adapter<TaxCoreReceiptJson>()
+
+            val receipt: TaxCoreReceiptJson = (jsonAdapter.fromJson(result.toString()))
+                ?: return Result.failure(FetchParsingError("Unable to parse JSON"))
+
+            return Result.success(FullReceiptScrapeResult (
+                // The receipt text needs UNIX endlines because Android's WebView expects that
+                receiptText = receipt.journal.replace("\r\n", "\n"),
+                store = Store(
+                    status = StoreStatus.ONLINE,
+                    code = receipt.invoiceRequest.requestedBy +
+                            "-" + receipt.invoiceResult.signedBy,
+                    name = receipt.invoiceRequest.locationName +
+                            " (" + receipt.invoiceRequest.businessName + ")",
+                    usersName = receipt.invoiceRequest.buyer,
+                    country = this@SimpleReceipt.country,
+                    municipality = receipt.invoiceRequest.administrativeUnit,
+                    city = receipt.invoiceRequest.city,
+                    address = receipt.invoiceRequest.address,
+                    note = null,
+                )
+            ))
+
+        }
+
         internal fun fullScrape(
                 scraper: BlockingFetcher<Request> = OkHttpFetcher
             ): Result<FullReceiptScrapeResult> {
 
             return try {
                 // HttpFetcher is broken
-                Result.success(skrape(scraper) {
-                    request {
-                        this.url = uri.toString()
-                    }
-
-                    response {
-                        htmlDocument {
-                            // I do apologize to the incomprehensibly complex functional
-                            // monad-ahh shit spaghetti going on here
-                            FullReceiptScrapeResult (
-                                receiptText = (pre {
-                                    withAttribute = "style" to "font-family:monospace"
-                                    findAll {
-                                        map {
-                                            it.toString().lineSequence()
-                                                .joinToString("\n") { line ->
-                                                    val firstNonWhitespace = line.trimStart()
-                                                    if (firstNonWhitespace.isEmpty())
-                                                        line
-                                                    else when (firstNonWhitespace[0]) {
-                                                        '=', '<' -> firstNonWhitespace
-                                                        else -> line
-                                                    }
-                                                }
-                                        }
-                                    }
-                                }[0]
-                                    .replace(
-                                        "font-family:monospace",
-                                        "font-family:monospace; width: fit-content; margin: 0 auto; text-align: center;"
-                                    )),
-                                store = Store(
-                                    status = StoreStatus.ONLINE,
-                                    code = this@SimpleReceipt.requestedBy + "-" + this@SimpleReceipt.signedBy,
-                                    name = span { withId = "shopFullNameLabel"; findFirst { text } },
-                                    usersName = null,
-                                    country = this@SimpleReceipt.country,
-                                    municipality = span { withId = "administrativeUnitLabel"; findFirst { text } },
-                                    city = span { withId = "cityLabel"; findFirst { text } },
-                                    address = span { withId = "addressLabel"; findFirst { text } },
-                                    note = null,
-                                ),
-                            )
-                        }
-                    }
-                })
+                when(country) {
+                    ReceiptExtractor.Country.RS -> fullScrapeVersion2()
+                    ReceiptExtractor.Country.BA -> fullScrapeVersion2()
+                }
             } catch(e: SSLHandshakeException) {
                 Result.failure(FetchInvalidCertificate(e.message))
+            } catch(e: FetchParsingError) {
+                Result.failure(FetchParsingError(e.message))
             } catch(e: Exception) {
                 Result.failure(FetchGeneralFailure(e.message))
             }
@@ -337,95 +362,6 @@ class TaxCore {
                 ),
                 store = result.store
             ), exception)
-        }
-
-        companion object {
-            fun getHumanAmount(amount: Long, unit: MonetaryUnit): Double {
-                return when (unit) {
-                    MonetaryUnit.RSD -> amount.toDouble() / 10000f
-                    MonetaryUnit.BAM -> amount.toDouble() / 10000f
-                }
-            }
-        }
-
-        fun getHumanAmount(): Double {
-            return getHumanAmount(this.totalAmount, this.unit)
-        }
-    }
-
-    // Warning: You HAVE to call close() on this, otherwise the spinner will not disappear!
-    // The idea was to migrate this to a separate class that will act as a factory for all
-    // other bill types that are incompatible with each-other
-    class ReceiptExtractor {
-        enum class Country {
-            RS,        // Serbia
-            BA;        // Bosnia
-        }
-
-        class InvalidURIHost(message: String) : Exception(message)
-        class NotAnURI(message: String?) : Exception(message)
-        class EntryAlreadyExists() : Exception()
-
-        private var uri: URI
-
-        constructor(data: ByteArray) {
-            try {
-                uri = URI.create(String(data, StandardCharsets.UTF_8))
-
-                // The idea is if we have multiple Tax systems that we are able to determine which
-                // one we pick from here
-                val country = when (uri.host) {
-                    "suf.purs.gov.rs" -> Country.RS
-                    "suf.poreskaupravars.org" -> Country.BA
-                    else -> throw InvalidURIHost("No known tax authority matches")
-                }
-            } catch(e: InvalidURIHost) {
-                throw e
-            } catch(e: URISyntaxException) {
-                // Here you should handle potentially other QR types, such as the Austrian one
-                throw NotAnURI(e.message)
-            }
-        }
-
-        // @return - Returns a pair of humanly readable receipt code and any potential error
-        suspend fun processAndInsertReceipt(
-            activity: Activity,
-            receiptStoreInterface: ReceiptStoreInterface,
-            existingReceiptID: Long? = null
-        ): Pair<String?, Throwable?> {
-            // Here we should branch out to provider specific implementations when they arrive
-            val simple = SimpleReceipt(uri)
-
-            // Access the database globally
-            return withContext(Dispatchers.IO) {
-                var (pair, error) = simple.fetchReceiptAndStore(activity, existingReceiptID)
-                if(receiptStoreInterface.insertOrUpdate(pair) == -1L) {
-                    error = EntryAlreadyExists()
-                }
-
-                // Update to non TaxCore specific way once you get to it
-                val humanName = pair.store.code + '-' + pair.receipt.code
-
-                Pair(humanName, error)
-            }
-        }
-
-        companion object {
-            // The idea with this is that we're able to turn machine errors to something
-            // we can display to users
-            // This is a sort-of error dictionary I guess
-            fun receiptStatusToMessage(activity: Activity, code: String?, error: Throwable?, isUpdate: Boolean): String {
-                val res = activity.resources
-
-                return when (error) {
-                    null -> if(isUpdate)
-                        res.getString(R.string.receipt_updated, code)
-                    else res.getString(R.string.receipt_added, code)
-                    is EntryAlreadyExists -> res.getString(R.string.receipt_exists)
-                    is SimpleReceipt.FetchInvalidCertificate -> res.getString(R.string.ssl_exception, error.message)
-                    else -> res.getString(R.string.unknown_failure, error.message)
-                }
-            }
         }
     }
 }
