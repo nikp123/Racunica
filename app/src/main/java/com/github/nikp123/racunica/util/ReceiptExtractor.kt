@@ -5,6 +5,7 @@ import java.net.URI
 import java.net.URISyntaxException
 import java.nio.charset.StandardCharsets
 import com.github.nikp123.racunica.R
+import com.github.nikp123.racunica.data.Receipt
 import com.github.nikp123.racunica.data.ReceiptStoreInterface
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,21 +17,23 @@ import kotlinx.coroutines.withContext
 class ReceiptExtractor {
     enum class Country {
         RS,        // Serbia
-        BA;        // Bosnia
-        //HR,        // Croatia
+        BA,        // Bosnia
+        HR;        // Croatia
         //AT,        // Austria
 
         fun toID(): Int {
             return when(this) {
                 BA -> R.string.country_name_bosnia
                 RS -> R.string.country_name_serbia
+                HR -> R.string.country_name_croatia
             }
         }
     }
 
     enum class MonetaryUnit {
-        RSD,        // Serbia
-        BAM;        // Bosnia
+        EUR,        // The Euro
+        RSD,        // Serbian Dinar
+        BAM;        // Bosnian Convertible Mark
 
         companion object {
             fun fromStringOrThrow(str: String): MonetaryUnit {
@@ -70,6 +73,7 @@ class ReceiptExtractor {
             country = when (uri.host) {
                 "suf.purs.gov.rs" -> Country.RS
                 "suf.poreskaupravars.org" -> Country.BA
+                "porezna.gov.hr" -> Country.HR
                 else -> throw InvalidURIHost("No known tax authority matches")
             }
         } catch(e: InvalidURIHost) {
@@ -86,23 +90,35 @@ class ReceiptExtractor {
         receiptStoreInterface: ReceiptStoreInterface,
         existingReceiptID: Long? = null
     ): Pair<String?, Throwable?> {
-        // Here we should branch out to provider specific implementations when they arrive
-        val simple = when(this@ReceiptExtractor.country) {
-            Country.RS -> TaxCore.SimpleReceipt(uri)
-            Country.BA -> TaxCore.SimpleReceipt(uri)
-        }
+        return when(this@ReceiptExtractor.country) {
+            Country.RS, Country.BA -> {
+                val simple = TaxCore.SimpleReceipt(uri)
 
-        // Access the database globally
-        return withContext(Dispatchers.IO) {
-            var (pair, error) = simple.fetchReceiptAndStore(activity, existingReceiptID)
-            if(receiptStoreInterface.insertOrUpdate(pair) == -1L) {
-                error = EntryAlreadyExists()
+                // Access the database globally
+                withContext(Dispatchers.IO) {
+                    var (pair, error) = simple.fetchReceiptAndStore(activity, existingReceiptID)
+                    if(receiptStoreInterface.insertOrUpdate(pair) == -1L) {
+                        error = EntryAlreadyExists()
+                    }
+
+                    // Update to non TaxCore specific way once you get to it
+                    val humanName = pair.store!!.code + '-' + pair.receipt.code
+
+                    Pair(humanName, error)
+                }
             }
+            Country.HR -> {
+                val simple = HRPorezna.SimpleReceipt(uri)
 
-            // Update to non TaxCore specific way once you get to it
-            val humanName = pair.store.code + '-' + pair.receipt.code
-
-            Pair(humanName, error)
+                withContext(Dispatchers.IO) {
+                    val humanName = simple.receiptID
+                    var error: Throwable? = null
+                    if(receiptStoreInterface.insertOrUpdateReceipt(simple.getReceipt()) == -1L) {
+                        error = EntryAlreadyExists()
+                    }
+                    Pair(humanName, error)
+                }
+            }
         }
     }
 
@@ -127,6 +143,7 @@ class ReceiptExtractor {
             return when (unit) {
                 MonetaryUnit.RSD -> amount.toDouble() / 10000f
                 MonetaryUnit.BAM -> amount.toDouble() / 10000f
+                MonetaryUnit.EUR -> amount.toDouble() / 100f
             }
         }
     }

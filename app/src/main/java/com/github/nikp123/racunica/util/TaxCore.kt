@@ -297,6 +297,7 @@ class TaxCore {
                 when(country) {
                     ReceiptExtractor.Country.RS -> fullScrapeVersion2()
                     ReceiptExtractor.Country.BA -> fullScrapeVersion2()
+                    else -> throw UnsupportedCountry()
                 }
             } catch(e: SSLHandshakeException) {
                 Result.failure(FetchInvalidCertificate(e.message))

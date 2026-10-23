@@ -114,3 +114,7 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(kotlin("test"))
 }
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}

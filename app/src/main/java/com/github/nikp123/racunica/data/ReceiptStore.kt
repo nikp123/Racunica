@@ -9,5 +9,5 @@ data class ReceiptStore (
         parentColumn = "storeID",
         entityColumn = "id"
     )
-    val store: Store
+    val store: Store?
 )

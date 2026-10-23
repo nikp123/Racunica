@@ -49,7 +49,24 @@ class ReceiptAdapter(private var receiptStores: List<ReceiptStore> = emptyList()
             unixTimeToRelativeTime(receipt.time, context)
         holder.amount.text = String.format("%.2f", ReceiptExtractor.getHumanAmount(receipt.amount,
             receipt.unit))
-        holder.name.text        = store.usersName ?: (store.name ?: store.code)
+
+        // A bit complicated behaviour for receipts which don't have stores
+        if(store == null) {
+            holder.name.text = holder.itemView.context.getString(R.string.receipt_store_unknown)
+            // Since we don't have a store, we'll show the receipt code where the store name
+            // is supposed to go unless a user adds a note for that receipt
+            holder.name.text = when(receipt.note != null) {
+                true -> receipt.note.split("\n")[0]
+                false -> receipt.code
+            }
+        } else {
+            holder.name.text = store.usersName ?: (store.name ?: store.code)
+            holder.receiptNote.visibility = when(receipt.note != null) {
+                true -> View.VISIBLE; false -> View.GONE
+            }
+            if(receipt.note != null) holder.receiptNote.text = receipt.note.split("\n")[0]
+        }
+
         holder.receiptCode.text = holder.receiptCode.resources.getString(R.string.receipt_code_short) + receipt.code
         holder.type.setBackgroundResource(when(receipt.type) {
             ReceiptExtractor.TransactionType.SALE   -> R.drawable.ic_receipt_foreground
@@ -59,11 +76,6 @@ class ReceiptAdapter(private var receiptStores: List<ReceiptStore> = emptyList()
         // Though, admittedly I have no idea how to do this properly :(
         if(holder.name.text != null)
             holder.type.contentDescription = holder.name.text
-
-        holder.receiptNote.visibility = when(receipt.note != null) {
-            true -> View.VISIBLE; false -> View.GONE
-        }
-        if(receipt.note != null) holder.receiptNote.text = receipt.note.split("\n")[0]
     }
 
     inner class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

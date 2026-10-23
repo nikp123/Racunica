@@ -32,7 +32,7 @@ data class Receipt (
     val time:       Long,
 
     // Code legally identifying this store
-    val storeID:    Long,
+    val storeID:    Long?,
 
     // Code identifying the receipt
     val code:       String,

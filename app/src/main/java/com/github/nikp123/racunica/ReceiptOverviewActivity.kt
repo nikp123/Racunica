@@ -5,11 +5,13 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.github.nikp123.racunica.data.AppDatabase
 import com.github.nikp123.racunica.data.ReceiptStatus
@@ -52,7 +54,11 @@ class ReceiptOverviewActivity : AppCompatActivity() {
         val view = binding.root
 
         // Navbar
-        val receiptName = String.format("%s-%s", store.code, receipt.code)
+        val receiptName = if(store == null) {
+            receipt.code
+        } else {
+            String.format("%s-%s", store.code, receipt.code)
+        }
         val title = resources.getString(R.string.receipt_overview, receiptName)
         supportActionBar?.title = title
 
@@ -85,18 +91,24 @@ class ReceiptOverviewActivity : AppCompatActivity() {
 
         // Store
         storeCustomName = view.findViewById(R.id.receipt_store_custom_name)
-        if (store.usersName != null) storeCustomName.setText(store.usersName)
-        if(store.municipality != null)
-            view.findViewById<TextView>(R.id.receipt_details_store_municipality).text = store.municipality
-        if(store.city != null)
-            view.findViewById<TextView>(R.id.receipt_details_store_city).text = store.city
-        if(store.address != null)
-            view.findViewById<TextView>(R.id.receipt_details_store_address).text = store.address
-        if(store.name != null)
-            view.findViewById<TextView>(R.id.receipt_details_store_registered_name).text = store.name
         storeNote = view.findViewById(R.id.receipt_details_store_note)
-        storeNote.setText(store.note)
-        view.findViewById<TextView>(R.id.receipt_details_store_id).text = store.code
+        if(store != null) {
+            if (store.usersName != null) storeCustomName.setText(store.usersName)
+            if (store.municipality != null)
+                view.findViewById<TextView>(R.id.receipt_details_store_municipality).text =
+                    store.municipality
+            if (store.city != null)
+                view.findViewById<TextView>(R.id.receipt_details_store_city).text = store.city
+            if (store.address != null)
+                view.findViewById<TextView>(R.id.receipt_details_store_address).text = store.address
+            if (store.name != null)
+                view.findViewById<TextView>(R.id.receipt_details_store_registered_name).text =
+                    store.name
+            storeNote.setText(store.note)
+            view.findViewById<TextView>(R.id.receipt_details_store_id).text = store.code
+        } else {
+            view.findViewById<LinearLayout>(R.id.receipt_store).isVisible = false
+        }
 
         // Options
         view.findViewById<Button>(R.id.receipt_options_open_link).setOnClickListener {
@@ -157,7 +169,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
         }
 
         val navigateToBusiness = view.findViewById<Button>(R.id.receipt_options_navigate_to_business)
-        if(store.address != null) {
+        if(store != null && store.address != null) {
             navigateToBusiness.isEnabled = true
             navigateToBusiness.setOnClickListener {
                 runOnUiThread {
@@ -205,7 +217,7 @@ class ReceiptOverviewActivity : AppCompatActivity() {
                         // Do updates on a separate thread to prevent UI lockups
                         withContext(Dispatchers.IO) {
                             receiptDAO.delete(receipt)
-                            if (receiptDAO.getStoreReferenceCount(store.id) == 0L)
+                            if (store != null && receiptDAO.getStoreReferenceCount(store.id) == 0L)
                                 storeDAO.delete(store)
                         }
 
@@ -259,14 +271,18 @@ class ReceiptOverviewActivity : AppCompatActivity() {
             // Do updates on a separate thread to prevent UI lockups
             withContext(Dispatchers.IO) {
                 val receipt = receiptDAO.read(receiptID)
-                val store = storeDAO.read(receipt.storeID)
                 receiptDAO.update(receipt.copy(
                     note = receiptText.ifEmpty { null }
                 ))
-                storeDAO.update(store.copy(
-                    usersName = storeNameText.ifEmpty { null },
-                    note = storeText.ifEmpty { null }
-                ))
+
+                if(receipt.storeID != null) {
+                    val store = storeDAO.read(receipt.storeID)
+
+                    storeDAO.update(store.copy(
+                        usersName = storeNameText.ifEmpty { null },
+                        note = storeText.ifEmpty { null }
+                    ))
+                }
             }
         }
     }

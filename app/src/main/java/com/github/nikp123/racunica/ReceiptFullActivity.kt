@@ -64,7 +64,11 @@ class ReceiptFullActivity : AppCompatActivity() {
         val (receipt, store) = pair
 
         // Navbar
-        val receiptName = String.format("%s-%s", store.code, receipt.code)
+        val receiptName = if(store == null) {
+            receipt.code
+        } else {
+            String.format("%s-%s", store.code, receipt.code)
+        }
         val title = resources.getString(R.string.receipt_overview, receiptName)
         supportActionBar?.title = title
 

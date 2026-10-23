@@ -34,6 +34,9 @@ interface ReceiptDAO {
     @Query("SELECT * FROM receipts WHERE country = :country AND storeID = :storeID AND code = :code AND time = :time")
     fun findByMatchingReceipt(country: ReceiptExtractor.Country, storeID: Long, code: String, time: Long): Receipt?
 
+    @Query("SELECT * FROM receipts WHERE country = :country AND code = :code AND time = :time")
+    fun findByMatchingReceiptWOStore(country: ReceiptExtractor.Country, code: String, time: Long): Receipt?
+
     @Transaction
     @Query("SELECT * FROM receipts WHERE id = :id")
     fun observeWithStore(id: Long): Flow<ReceiptStore>

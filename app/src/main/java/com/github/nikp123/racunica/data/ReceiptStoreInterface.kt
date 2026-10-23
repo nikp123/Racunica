@@ -12,6 +12,27 @@ class ReceiptStoreInterface(
     )
 
     @Transaction
+    suspend fun insertOrUpdateReceipt(receipt: Receipt): Long {
+        // This last step ensures we don't nuke a "updated" bill by accident
+        val existingReceipt = receiptDAO.findByMatchingReceiptWOStore(
+            country = receipt.country,
+            code = receipt.code,
+            time = receipt.time
+        )
+
+        return if(existingReceipt == null) {
+            receiptDAO.insert(receipt)
+        } else if(existingReceipt.status == ReceiptStatus.OFFLINE ||
+            existingReceipt.status == ReceiptStatus.ONLINE_FAILURE) {
+            receiptDAO.update(receipt.copy(
+                id = existingReceipt.id,
+                note = existingReceipt.note
+            ))
+            existingReceipt.id
+        } else -1L
+    }
+
+    @Transaction
     suspend fun insertOrUpdate(pair: ReceiptStore): Long {
         val (newReceipt, newStore) = pair
         // The logic is as follows:
@@ -33,6 +54,9 @@ class ReceiptStoreInterface(
         // The Store-only update methods should be only used for user customization, because
         // every Store update should come from the Receipt (unless a different Tax/Billing
         // system changes this)
+
+        // Bail if we somehow got a fake store
+        if(newStore == null) return -1L
 
         // First check if the Store exists and if it's the "updated" one
         val existingStore = storeDAO.findByCode(newStore.code)
